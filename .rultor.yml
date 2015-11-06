@@ -3,11 +3,13 @@
 
  merge:
   script:
-		cd BackEnd 
-		mvn clean install
+    cd BackEnd 
+    mvn clean install
 
  release:
   script: 
     git tag "$tag"
+    mvn clean install
+    git push --all
 
 	
