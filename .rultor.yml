@@ -1,13 +1,13 @@
 #This is the rultor configuration file for merge and release
 # currently no deploy step
+
  merge:
   script:
     cd BackEnd 
     mvn clean install
 	
-
- release :
-  script : 
+release:
+  script: 
     git tag "$tag"
     mvn clean install
     git push --all
