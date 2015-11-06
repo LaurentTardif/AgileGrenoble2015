@@ -5,8 +5,11 @@
   script:
     cd BackEnd 
     mvn clean install
-	
-release:
+
+ merge:
+  script: mvn clean install
+
+ release:
   script: 
     git tag "$tag"
     mvn clean install
