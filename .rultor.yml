@@ -1,0 +1,10 @@
+merge:
+  script: mvn clean install
+
+ release:
+  script: 
+    git tag "$tag"
+    mvn clean package
+	git push --all
+	
+	
