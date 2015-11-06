@@ -2,7 +2,9 @@
 # currently no deploy step
 
  merge:
-  script: mvn clean install
+  script:
+		cd BackEnd 
+		mvn clean install
 
  release:
   script: 
