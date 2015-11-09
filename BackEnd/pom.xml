@@ -26,10 +26,11 @@ under the License.
 	<parent>
 		<groupId>org.apache.flink</groupId>
 		<artifactId>flink-streaming-connectors-parent</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.9.1</version>
 		<relativePath>..</relativePath>
 	</parent>
-
+	
+	<version>1.0-SNAPSHOT</version>
 	<groupId>org.agile.grenoble.twitter</groupId>
 	<artifactId>flink-demo-twitter</artifactId>
 	<name>flink-demo-twitter</name>
