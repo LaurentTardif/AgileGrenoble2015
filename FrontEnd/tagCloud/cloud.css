@@ -1,0 +1,33 @@
+﻿.cloud1 { font-size:11px; }
+.cloud2 { font-size:13px; }
+.cloud3 { font-size:15px; }
+.cloud4 { font-size:17px; }
+.cloud5 { font-size:19px; }
+.cloud6 { font-size:21px; }
+.cloud7 { font-size:23px; }
+.cloud8 { font-size:25px; }
+.cloud9 { font-size:27px; }
+.cloud10 { font-size:29px; }
+.cloud11 { font-size:31px; }
+.cloud12 { font-size:33px; }
+.cloud13 { font-size:35px; }
+.cloud14 { font-size:37px; }
+.cloud15 { font-size:39px; }
+.cloud16 { font-size:41px; }
+.cloud17 { font-size:43px; }
+.cloud18 { font-size:45px; }
+.cloud19 { font-size:47px; }
+.cloud20 { font-size:49px; }
+
+.tags_box {
+	width: 300px;
+	border: 2px dotted darkgrey;
+	padding: 10px;
+	color: darkgrey;
+	font-family: Verdana;
+	text-align: center;
+}
+
+a {
+	text-decoration: none;
+}
