@@ -8,6 +8,7 @@ function getCloudHTML( ) {
 	$scale = round ( $NB_STYLES / ( $MAX_WEIGHT - $MIN_WEIGHT + 1 ) );
 	
 	// Generation du code
+	/*
 	$retour = "<div class=\"tags_box\">";
 	
 	if ( count ( $TAGS_ARRAY ) ) {
@@ -20,6 +21,23 @@ function getCloudHTML( ) {
 		}
 	}
 	
+	$retour .= "\n</div>";
+	*/
+	$retour = "<div id=\"tags\">";
+	$retour .= "\n\t<ul>";
+	
+	if ( count ( $TAGS_ARRAY ) ) {
+		foreach ( $TAGS_ARRAY as $tag_element) {
+			// Determination de la taille du tag
+			$tag_size = round ( $tag_element["weight"] * $scale);
+			$retour .= "\n\t<li><a href=\"#\"";
+			$retour .= " data-weight=\"" . $tag_size . "\">";
+			$retour .= htmlentities( $tag_element["tag"] );
+			$retour .= "</a></li>";
+		}
+	}
+	
+	$retour .= "\n\t</ul>";
 	$retour .= "\n</div>";
 	
 	return $retour;
