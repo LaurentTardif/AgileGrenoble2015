@@ -17,9 +17,9 @@
 
 package org.agile.grenoble.twitter;
 
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.agile.grenoble.twitter.JSONParseFlatMap;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +30,9 @@ import org.slf4j.LoggerFactory;
  * resource folder. The access keys can be found in your twitter account.
  */
 public class TwitterFilterSourceExample {
+
+
+
     private static final Logger LOG = LoggerFactory.getLogger(TwitterFilterSourceExample.class);
 	/**
 	 * path to the twitter properties
@@ -83,15 +86,25 @@ public class TwitterFilterSourceExample {
 						.getFile());
 		*/
 		TwitterFilterSource twitterSource = new TwitterFilterSource(propertiesPath);
-		twitterSource.trackTerm("agile");
-		twitterSource.filterLanguage("fr");
+        //we can add several track term
+        twitterSource.trackTerm("#agile");
+        twitterSource.trackTerm("#agileGrenoble");
+        twitterSource.trackTerm("#agileGrenoble2015");
+        twitterSource.trackTerm("#agilegrenoble");
+        twitterSource.trackTerm("#agilegrenoble2015");
 
-		DataStream<String> streamSource = env.addSource(twitterSource).flatMap(
-				new JSONParseFlatMap<String, String>() {
+        twitterSource.trackTerm("agile");
+        twitterSource.trackTerm("grenoble");
+
+        //define the language of the twitt
+        twitterSource.filterLanguage("fr");
+
+		DataStream<SimpleTwitter> streamSource = env.addSource(twitterSource).flatMap(
+				new JSONParseFlatMap<String, SimpleTwitter>() {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public void flatMap(String s, Collector<String> c)
+					public void flatMap(String s, Collector<SimpleTwitter> c)
 							throws Exception {
 						String text="unitialized text" ,name ="unitialized name";
 						try {
@@ -104,20 +117,36 @@ public class TwitterFilterSourceExample {
 						}
 						try {
 							name = this.getString(s, "user.name");
-							c.collect("name :" + name + "text :" + text);
 						} catch (Exception e) {
                             if (LOG.isErrorEnabled()) {
                                 LOG.error("Fail to collect name");
                             }
 							System.err.println("Fail to collect name")	;
 						}
-                        c.collect("name :" + name + "text :" + text);
+                        SimpleTwitter st = new SimpleTwitter(name,text) ;
+                        c.collect(st);
 						//c.collect(s);
 					}
 				});
 
-		//streamSource.print();
+        DataStream<String> streamTwitters = streamSource.map(new MapFunction<SimpleTwitter, String>() {
+            @Override
+            public String map(SimpleTwitter simpleTwitter) throws Exception {
+                return simpleTwitter.getTwitterName();
+            }
+        }) ;
+        DataStream<String> streamTwits = streamSource.map(new MapFunction<SimpleTwitter, String>() {
+            @Override
+            public String map(SimpleTwitter simpleTwitter) throws Exception {
+                return simpleTwitter.getTwittText() ;
+            }}) ; ;
+
+
+
+        //streamSource.print();
 		streamSource.writeAsText(outputPath);
+        streamTwits.writeAsText(outputPath+".twits");
+        streamTwitters.writeAsText(outputPath+".twitter");
 		try {
             if (LOG.isInfoEnabled()) {
                 LOG.info("Twitter Streaming API tracking AGILE in progress");
