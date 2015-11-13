@@ -9,5 +9,6 @@ cp ~/AgileGrenoble2015/BackEnd/target/flink-demo-twitter-1.0-SNAPSHOT.jar ~/flin
 #when dll are ok, start it
 ./start-local-streaming.sh
 
-./flink run -c org.agile.grenoble.twitter.TwitterStream /home/adminpsl/flink/build-target/lib/flink-demo-twitter-1.0-SNAPSHOT.jar /home/adminpsl/flinkDemo/twitter.properties  /tmp/out.txt
+#./flink run -c org.agile.grenoble.twitter.TwitterStream /home/adminpsl/flink/build-target/lib/flink-demo-twitter-1.0-SNAPSHOT.jar /home/adminpsl/flinkDemo/twitter.properties  /tmp/out.txt
 
+./flink run -c org.agile.grenoble.twitter.TwitterFilterSourceExample /home/adminpsl/flink/build-target/lib/flink-demo-twitter-1.0-SNAPSHOT.jar /home/adminpsl/flinkDemo/twitter.properties  /tmp/out.txt

@@ -18,11 +18,15 @@
 package org.agile.grenoble.twitter;
 
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
+import org.apache.sling.commons.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.StringTokenizer;
 
 /**
  * This is an example how to use TwitterFilterSource. Before executing the
@@ -94,7 +98,7 @@ public class TwitterFilterSourceExample {
         twitterSource.trackTerm("#agilegrenoble2015");
 
         twitterSource.trackTerm("agile");
-        twitterSource.trackTerm("grenoble");
+        //twitterSource.trackTerm("grenoble");
 
         //define the language of the twitt
         twitterSource.filterLanguage("fr");
@@ -129,24 +133,33 @@ public class TwitterFilterSourceExample {
 					}
 				});
 
-        DataStream<String> streamTwitters = streamSource.map(new MapFunction<SimpleTwitter, String>() {
-            @Override
-            public String map(SimpleTwitter simpleTwitter) throws Exception {
-                return simpleTwitter.getTwitterName();
-            }
-        }) ;
-        DataStream<String> streamTwits = streamSource.map(new MapFunction<SimpleTwitter, String>() {
-            @Override
-            public String map(SimpleTwitter simpleTwitter) throws Exception {
-                return simpleTwitter.getTwittText() ;
-            }}) ; ;
+        DataStream<Tuple2<String, Integer>> streamTwittos = streamSource
+                    .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
+                            @Override
+                            public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
+                                return new Tuple2<String, Integer>(simpleTwitter.getTwitterName(),1);
+                            }
+                         })
+                    // group by words and sum their occurrences
+                    .keyBy(0).sum(1);
+        ;
+        DataStream<Tuple2<String, Integer>> streamTwits = streamSource
+                .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
+                    @Override
+                    public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
+                        return new Tuple2<String, Integer>(simpleTwitter.getTwittText(), 1);
+                    }
+                })
+                // group by words and sum their occurrences
+                .keyBy(0).sum(1);
 
 
 
         //streamSource.print();
-		streamSource.writeAsText(outputPath);
+        streamTwittos.writeAsText(outputPath + ".twittos");
+        //streamSource.writeAsText(outputPath);
         streamTwits.writeAsText(outputPath+".twits");
-        streamTwitters.writeAsText(outputPath+".twitter");
+
 		try {
             if (LOG.isInfoEnabled()) {
                 LOG.info("Twitter Streaming API tracking AGILE in progress");
@@ -184,5 +197,39 @@ public class TwitterFilterSourceExample {
 		}
 		return true;
 	}
+
+    // *************************************************************************
+    // USER FUNCTIONS
+    // *************************************************************************
+
+    /**
+     * Makes sentences from English tweets.
+     * <p>
+     * Implements a string tokenizer that splits sentences into words as a
+     * user-defined FlatMapFunction. The function takes a line (String) and
+     * splits it into multiple pairs in the form of "(word,1)" ({@code Tuple2<String,
+     * Integer>}).
+     */
+    public static class TokenizeFlatMap extends JSONParseFlatMap<String, Tuple2<String, Integer>> {
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * Select the language from the incoming JSON text
+         */
+        @Override
+        public void flatMap(String value, Collector<Tuple2<String, Integer>> out) throws Exception {
+            StringTokenizer tokenizer = new StringTokenizer(value);
+
+            // split the message
+            while (tokenizer.hasMoreTokens()) {
+                String result = tokenizer.nextToken().replaceAll("\\s*", "").toLowerCase();
+
+                if (result != null && !result.equals("")) {
+                    out.collect(new Tuple2<String, Integer>(result, 1));
+                }
+            }
+        }
+
+    }
 
 }
