@@ -110,4 +110,12 @@ under the License.
 			</plugin>
 		</plugins>
 	</build>
+
+
+<repositories>
+    <repository>
+      <id>snapshot.apache</id>
+      <url> http://repository.apache.org/snapshots/</url>
+    </repository>
+ </repositories>
 </project>
