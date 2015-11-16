@@ -8,6 +8,7 @@
  release:
   script: 
     git tag "$tag" ;
+    cd BackEnd ;
     mvn clean install ;
     git push --all
 
