@@ -10,5 +10,5 @@
     git tag "$tag" ;
     cd BackEnd ;
     mvn clean install ;
-    git push --all
+    git push --tags
 
