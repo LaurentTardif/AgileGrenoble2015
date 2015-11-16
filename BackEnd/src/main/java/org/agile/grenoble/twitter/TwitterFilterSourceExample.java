@@ -18,7 +18,9 @@
 package org.agile.grenoble.twitter;
 
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
@@ -64,7 +66,11 @@ public class TwitterFilterSourceExample {
         "in_reply_to_status_id_str":null,"in_reply_to_user_id":null,
         "in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,
         "user":{
-            "id":216406867,"id_str":"216406867","name":"Laurent Fourmy","screen_name":"LaurentFourmy","location":"Sophia Antipolis","url":"http:\/\/www.softeam.fr","description":null,"protected":false,"verified":false,"followers_count":46,"friends_count":76,"listed_count":9,"favourites_count":4,"statuses_count":93,
+            "id":216406867,"id_str":"216406867",
+            "name":"Laurent Fourmy","screen_name":"LaurentFourmy",
+            "location":"Sophia Antipolis","url":"http:\/\/www.softeam.fr","description":null,
+            "protected":false,"verified":false,"followers_count":46,"friends_count":76,
+            "listed_count":9,"favourites_count":4,"statuses_count":93,
             "created_at":"Tue Nov 16 16:55:03 +0000 2010","utc_offset":null,"time_zone":null,"geo_enabled":false,
             "lang":"fr","contributors_enabled":false,"is_translator":false,"profile_background_color":"C0DEED",
             "profile_background_image_url":"http:\/\/abs.twimg.com\/images\/themes\/theme1\/bg.png",
@@ -96,7 +102,7 @@ public class TwitterFilterSourceExample {
         twitterSource.trackTerm("#agileGrenoble2015");
         twitterSource.trackTerm("#agilegrenoble");
         twitterSource.trackTerm("#agilegrenoble2015");
-
+        twitterSource.trackTerm("#ag2015");
         twitterSource.trackTerm("agile");
         //twitterSource.trackTerm("grenoble");
 
@@ -144,21 +150,22 @@ public class TwitterFilterSourceExample {
                     .keyBy(0).sum(1);
         ;
         DataStream<Tuple2<String, Integer>> streamTwits = streamSource
-                .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
+                .map(new MapFunction<SimpleTwitter,String>() {
                     @Override
-                    public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
-                        return new Tuple2<String, Integer>(simpleTwitter.getTwittText(), 1);
+                    public String map(SimpleTwitter simpleTwitter) throws Exception {
+                        return simpleTwitter.getTwittText();
                     }
                 })
+                .flatMap(new TokenizeFlatMap())
                 // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
 
 
         //streamSource.print();
-        streamTwittos.writeAsText(outputPath + ".twittos");
-        //streamSource.writeAsText(outputPath);
-        streamTwits.writeAsText(outputPath+".twits");
+        streamTwittos.writeAsText(outputPath + ".twittos", FileSystem.WriteMode.OVERWRITE);
+        //streamSource.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);
+        streamTwits.writeAsText(outputPath+".twits", FileSystem.WriteMode.OVERWRITE);
 
 		try {
             if (LOG.isInfoEnabled()) {
@@ -210,12 +217,9 @@ public class TwitterFilterSourceExample {
      * splits it into multiple pairs in the form of "(word,1)" ({@code Tuple2<String,
      * Integer>}).
      */
-    public static class TokenizeFlatMap extends JSONParseFlatMap<String, Tuple2<String, Integer>> {
+    public static class TokenizeFlatMap extends RichFlatMapFunction<String, Tuple2<String, Integer>> {
         private static final long serialVersionUID = 1L;
 
-        /**
-         * Select the language from the incoming JSON text
-         */
         @Override
         public void flatMap(String value, Collector<Tuple2<String, Integer>> out) throws Exception {
             StringTokenizer tokenizer = new StringTokenizer(value);
