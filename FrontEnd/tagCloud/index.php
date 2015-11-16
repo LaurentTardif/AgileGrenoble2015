@@ -14,7 +14,9 @@
 /**
  * Preparation des donnees
  */
-loadTags();
+$array_tweets=loadTags("tweets.txt");
+$array_tweeters=loadTags("tweeters.txt");
+
 
 ?>
 <?xml version="1.0" encoding="UTF-8"?>
@@ -23,9 +25,57 @@ loadTags();
 	<head>
 		<link rel="stylesheet" type="text/css" href="cloud.css" charset="UTF-8" />
 		<title>Nuages de tags</title>
+		<!--[if lt IE 9]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+		<script src="tagcanvas.min.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			window.onload = function() {
+				TagCanvas.weight = true;
+				TagCanvas.weightFrom = 'data-weight';
+				TagCanvas.weightSize = 2;
+				TagCanvas.textFont = 'Verdana';
+				TagCanvas.initial = [0.1,-0.1];
+				try {
+					TagCanvas.Start('myTweetsCanvas','tag_tweets',{
+						// textColour: '#00f',
+						weightMode: 'both',
+						outlineColour: '#ff00ff',
+						reverse: true,
+						depth: 0.8,
+						maxSpeed: 0.1
+					});
+					TagCanvas.Start('myTweetersCanvas','tag_tweeters',{
+						// textColour: '#00f',
+						weightMode: 'both',
+						outlineColour: '#ff00ff',
+						reverse: true,
+						depth: 0.8,
+						maxSpeed: 0.1
+					});
+
+				} catch(e) {
+					// something went wrong, hide the canvas container
+					document.getElementById('myTweetsContainer').style.display = 'none';
+				}
+			};
+		</script>
 	</head>
 	<body>
 		<h1>Nuages de tags</h1>
-<?php echo ( getCloudHTML( ) ); ?>
+		<div id="myTweetsContainer">
+			<canvas width="400" height="600" id="myTweetsCanvas">
+				<p>Anything in here will be replaced on browsers that support the canvas element</p>
+			</canvas>
+		</div>
+		<?php echo ( getCloudHTML("tag_tweets",$array_tweets ) ); ?>
+
+
+		<div id="myTweetersContainer">
+			<canvas width="400" height="600" id="myTweetersCanvas">
+				<p>Anything in here will be replaced on browsers that support the canvas element</p>
+			</canvas>
+		</div>
+		<?php echo ( getCloudHTML("tag_tweeters",$array_tweeters ) ); ?>
+
+
 	</body>
 </html>

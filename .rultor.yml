@@ -9,6 +9,6 @@
   script: 
     git tag "$tag" ;
     cd BackEnd ;
-    mvn clean install ;
+    mvn clean install 
     
 
