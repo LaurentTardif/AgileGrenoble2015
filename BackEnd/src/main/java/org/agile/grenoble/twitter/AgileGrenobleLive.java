@@ -103,41 +103,19 @@ public class AgileGrenobleLive {
         twitterSource.trackTerm("#agilegrenoble");
         twitterSource.trackTerm("#agilegrenoble2015");
         twitterSource.trackTerm("#ag2015");
+        twitterSource.trackTerm("#ag15");
         twitterSource.trackTerm("agile");
         //twitterSource.trackTerm("grenoble");
 
         //define the language of the twitt
         twitterSource.filterLanguage("fr");
+        twitterSource.filterLanguage("en");
 
-		DataStream<SimpleTwitter> streamSource = env.addSource(twitterSource).flatMap(
-				new JSONParseFlatMap<String, SimpleTwitter>() {
-					private static final long serialVersionUID = 1L;
 
-					@Override
-					public void flatMap(String s, Collector<SimpleTwitter> c)
-							throws Exception {
-						String text="unitialized text" ,name ="unitialized name";
-						try {
-							text = this.getString(s, "text");
-						} catch (Exception e) {
-                            if (LOG.isErrorEnabled()) {
-                                LOG.error("Fail to collect text");
-                            }
-							System.err.println("Fail to collect text")	;
-						}
-						try {
-							name = this.getString(s, "user.name");
-						} catch (Exception e) {
-                            if (LOG.isErrorEnabled()) {
-                                LOG.error("Fail to collect name");
-                            }
-							System.err.println("Fail to collect name")	;
-						}
-                        SimpleTwitter st = new SimpleTwitter(name,text) ;
-                        c.collect(st);
-						//c.collect(s);
-					}
-				});
+        //build the twitt stream (it will be in json) then mapped to a stream of simpleTwitter object
+		DataStream<String> json = env.addSource(twitterSource);
+
+        DataStream<SimpleTwitter> streamSource = json.flatMap(new SimpleTwitterConstructor());
 
         DataStream<Tuple2<String, Integer>> streamTwittos = streamSource
                     .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
@@ -157,15 +135,39 @@ public class AgileGrenobleLive {
                     }
                 })
                 .flatMap(new TokenizeFlatMap())
+                .flatMap(new RemoveLink())
+                .flatMap(new RemoveStopWord())
+                // group by words and sum their occurrences
+                .keyBy(0).sum(1);
+
+        DataStream<Tuple2<String, Integer>> streamGeo = streamSource
+                .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
+                    @Override
+                    public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
+                        return new Tuple2<String, Integer>(simpleTwitter.getGeo(),1);
+                    }
+                })
+                // group by words and sum their occurrences
+                .keyBy(0).sum(1);
+
+        DataStream<Tuple2<String, Integer>> streamCoordinate = streamSource
+                .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
+                    @Override
+                    public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
+                        return new Tuple2<String, Integer>(simpleTwitter.getCoordinate(),1);
+                    }
+                })
                 // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
 
-
+        json.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);
         //streamSource.print();
         streamTwittos.writeAsText(outputPath + ".twittos", FileSystem.WriteMode.OVERWRITE);
         //streamSource.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);
         streamTwits.writeAsText(outputPath+".twits", FileSystem.WriteMode.OVERWRITE);
+        streamGeo.writeAsText(outputPath+".geo", FileSystem.WriteMode.OVERWRITE);
+        streamCoordinate.writeAsText(outputPath+".coordinate", FileSystem.WriteMode.OVERWRITE);
 
 		try {
             if (LOG.isInfoEnabled()) {
@@ -235,5 +237,68 @@ public class AgileGrenobleLive {
         }
 
     }
+    public static class RemoveLink extends RichFlatMapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void flatMap(Tuple2<String, Integer> value, Collector<Tuple2<String, Integer>> out) throws Exception {
+            if (value.f0 != null && !value.f0.startsWith(("http"))) {
+                out.collect(new Tuple2<String, Integer>(value.f0,value.f1));
+            }
+        }
+
+    }
+    public static class RemoveStopWord extends RichFlatMapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void flatMap(Tuple2<String, Integer> value, Collector<Tuple2<String, Integer>> out) throws Exception {
+            if (value.f0 != null && value.f0.length()>2) {
+                out.collect(new Tuple2<String, Integer>(value.f0,value.f1));
+            }
+        }
+
+    }
+
+
+    public static class SimpleTwitterConstructor extends JSONParseFlatMap<String, SimpleTwitter> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void flatMap(String s, Collector<SimpleTwitter> c)
+        throws Exception {
+            String text="unitialized text" ,
+                    name ="unitialized name",
+                    geo = "unitialized geo",
+                    coordinate="unitialized coordinate";
+
+            try {
+                text = this.getString(s, "text");
+            } catch (Exception e) {
+                System.err.println("Fail to collect text")	;
+            }
+            try {
+                name = this.getString(s, "user.name");
+            } catch (Exception e) {
+                System.err.println("Fail to collect name")	;
+            }
+            try {
+                geo = this.getString(s, "geo.coordinates");
+            } catch (Exception e) {
+                System.err.println("Fail to collect geo")	;
+            }
+            try {
+                coordinate = this.getString(s, "user.location");
+            } catch (Exception e) {
+                System.err.println("Fail to collect coordinates")	;
+            }
+
+            LOG.info("Collect a twitt" + s);
+            SimpleTwitter st = new SimpleTwitter(name,text,geo,coordinate) ;
+            c.collect(st);
+            //c.collect(s);
+        }
+    }
+
 
 }
