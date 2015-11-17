@@ -35,15 +35,15 @@ import java.util.StringTokenizer;
  * example you have to define the access keys of twitter.properties in the
  * resource folder. The access keys can be found in your twitter account.
  */
-public class TwitterFilterSourceExample {
+public class AgileGrenobleLive {
 
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(TwitterFilterSourceExample.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AgileGrenobleLive.class);
 	/**
 	 * path to the twitter properties
 	 */
-	//private static final String PATH_TO_AUTH_FILE = "/twitter.properties";
+
 
 	public static void main(String[] args) {
 		if (!parseParameters(args)) {
