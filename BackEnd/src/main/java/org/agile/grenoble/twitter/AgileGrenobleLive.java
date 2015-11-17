@@ -22,6 +22,7 @@ import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.JoinedStreams;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
 import org.apache.sling.commons.json.JSONException;
@@ -112,8 +113,12 @@ public class AgileGrenobleLive {
         twitterSource.filterLanguage("en");
 
 
+        DataStream<String> staticjson = env.readTextFile("/home/adminpsl/flinkDemo/twits.txt");
+
         //build the twitt stream (it will be in json) then mapped to a stream of simpleTwitter object
-		DataStream<String> json = env.addSource(twitterSource);
+		DataStream<String> dynamicjson = env.addSource(twitterSource);
+
+        DataStream<String> json = dynamicjson.union(staticjson);
 
         DataStream<SimpleTwitter> streamSource = json.flatMap(new SimpleTwitterConstructor());
 
