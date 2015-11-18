@@ -17,6 +17,7 @@
 
 package org.agile.grenoble.twitter;
 
+import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -99,13 +100,12 @@ public class AgileGrenobleLive {
 		TwitterFilterSource twitterSource = new TwitterFilterSource(propertiesPath);
         //we can add several track term
         twitterSource.trackTerm("#agile");
-        twitterSource.trackTerm("#agileGrenoble");
+        twitterSource.trackTerm("#AgileGrenoble");
         twitterSource.trackTerm("#agileGrenoble2015");
         twitterSource.trackTerm("#agilegrenoble");
         twitterSource.trackTerm("#agilegrenoble2015");
         twitterSource.trackTerm("#ag2015");
         twitterSource.trackTerm("#ag15");
-        twitterSource.trackTerm("agile");
         //twitterSource.trackTerm("grenoble");
 
         //define the language of the twitt
@@ -120,7 +120,7 @@ public class AgileGrenobleLive {
 
         DataStream<String> json = dynamicjson.union(staticjson);
 
-        DataStream<SimpleTwitter> streamSource = json.flatMap(new SimpleTwitterConstructor());
+        DataStream<SimpleTwitter> streamSource = json.map(new SimpleTwitterConstructor());
 
         DataStream<Tuple2<String, Integer>> streamTwittos = streamSource
                     .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
@@ -129,8 +129,9 @@ public class AgileGrenobleLive {
                                 return new Tuple2<String, Integer>(simpleTwitter.getTwitterName(),1);
                             }
                          })
+                .filter(new RemoveEmpty())
                     // group by words and sum their occurrences
-                    .keyBy(0).sum(1);
+                .keyBy(0).sum(1);
         ;
         DataStream<Tuple2<String, Integer>> streamTwits = streamSource
                 .map(new MapFunction<SimpleTwitter,String>() {
@@ -140,9 +141,10 @@ public class AgileGrenobleLive {
                     }
                 })
                 .flatMap(new TokenizeFlatMap())
-                .flatMap(new RemoveLink())
-                .flatMap(new RemoveStopWord())
+                .filter(new RemoveLink())
+                .filter(new RemoveStopWord())
                 // group by words and sum their occurrences
+                .filter(new RemoveEmpty())
                 .keyBy(0).sum(1);
 
         DataStream<Tuple2<String, Integer>> streamGeo = streamSource
@@ -152,6 +154,7 @@ public class AgileGrenobleLive {
                         return new Tuple2<String, Integer>(simpleTwitter.getGeo(),1);
                     }
                 })
+                .filter(new RemoveEmpty())
                 // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
@@ -162,6 +165,7 @@ public class AgileGrenobleLive {
                         return new Tuple2<String, Integer>(simpleTwitter.getCoordinate(),1);
                     }
                 })
+                .filter(new RemoveEmpty())
                 // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
@@ -242,67 +246,73 @@ public class AgileGrenobleLive {
         }
 
     }
-    public static class RemoveLink extends RichFlatMapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>> {
+    public static class RemoveEmpty implements FilterFunction<Tuple2<String, Integer>> {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void flatMap(Tuple2<String, Integer> value, Collector<Tuple2<String, Integer>> out) throws Exception {
-            if (value.f0 != null && !value.f0.startsWith(("http"))) {
-                out.collect(new Tuple2<String, Integer>(value.f0,value.f1));
-            }
+        public boolean filter(Tuple2<String, Integer> value) throws Exception {
+            return  (value.f0 != null && !value.f0.startsWith(("uninitialized")));
         }
 
     }
-    public static class RemoveStopWord extends RichFlatMapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>> {
+    public static class RemoveLink implements FilterFunction<Tuple2<String, Integer>> {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void flatMap(Tuple2<String, Integer> value, Collector<Tuple2<String, Integer>> out) throws Exception {
-            if (value.f0 != null && value.f0.length()>2) {
-                out.collect(new Tuple2<String, Integer>(value.f0,value.f1));
-            }
+        public boolean filter(Tuple2<String, Integer> value) throws Exception {
+            return  (value.f0 != null && !value.f0.startsWith(("http")));
+        }
+
+    }
+    public static class RemoveStopWord  implements FilterFunction<Tuple2<String, Integer>> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean filter(Tuple2<String, Integer> value) throws Exception {
+            return (value.f0 != null && value.f0.length()>2) ;
         }
 
     }
 
 
-    public static class SimpleTwitterConstructor extends JSONParseFlatMap<String, SimpleTwitter> {
+    public static class SimpleTwitterConstructor implements MapFunction<String, SimpleTwitter> {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void flatMap(String s, Collector<SimpleTwitter> c)
+        public SimpleTwitter map(String s)
         throws Exception {
-            String text="unitialized text" ,
-                    name ="unitialized name",
-                    geo = "unitialized geo",
-                    coordinate="unitialized coordinate";
+            String text="uninitialized text" ,
+                    name ="uninitialized name",
+                    geo = "uninitialized geo",
+                    coordinate="uninitialized coordinate";
 
             try {
-                text = this.getString(s, "text");
+                text = JSONParseFlatMap.getString(s, "text");
             } catch (Exception e) {
                 System.err.println("Fail to collect text")	;
             }
             try {
-                name = this.getString(s, "user.name");
+                name = JSONParseFlatMap.getString(s, "user.name");
             } catch (Exception e) {
                 System.err.println("Fail to collect name")	;
             }
             try {
-                geo = this.getString(s, "geo.coordinates");
+                geo = JSONParseFlatMap.getString(s, "geo.coordinates");
             } catch (Exception e) {
                 System.err.println("Fail to collect geo")	;
             }
             try {
-                coordinate = this.getString(s, "user.location");
+                coordinate = JSONParseFlatMap.getString(s, "user.location");
             } catch (Exception e) {
                 System.err.println("Fail to collect coordinates")	;
             }
 
-            LOG.info("Collect a twitt" + s);
             SimpleTwitter st = new SimpleTwitter(name,text,geo,coordinate) ;
-            c.collect(st);
+            LOG.info("Collect a twitt from " + st.getTwitterName());
+            return st;
             //c.collect(s);
         }
+
     }
 
 

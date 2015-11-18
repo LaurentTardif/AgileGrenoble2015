@@ -136,7 +136,7 @@ public abstract class JSONParseFlatMap<IN, OUT> extends RichFlatMapFunction<IN, 
 	 * @throws JSONException
 	 *             If the field is not found.
 	 */
-	public String getString(String jsonText, String field) throws JSONException {
+	public static String getString(String jsonText, String field) throws JSONException {
 		JSONParser parser = new JSONParser(jsonText);
 		
 		return parser.parse(field).getString("retValue");
