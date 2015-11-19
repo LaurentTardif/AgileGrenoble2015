@@ -23,14 +23,13 @@ import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.JoinedStreams;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
-import org.apache.sling.commons.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 /**
  * This is an example how to use TwitterFilterSource. Before executing the
@@ -52,6 +51,7 @@ public class AgileGrenobleLive {
 			System.out.println("Arguments fail!");
 			System.exit (1);
 		};
+
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment
 				.getExecutionEnvironment();
 
@@ -61,7 +61,7 @@ public class AgileGrenobleLive {
         {"created_at":"Tue Nov 10 14:46:15 +0000 2015",
         "id":664091704534933504,"
         id_str":"664091704534933504",
-        "text":"RT @SofteamCadextan: Fin de journ\u00e9e avec une formation d'initiation \u00e0 l'Agile - #Agilit\u00e9 https:\/\/t.co\/2euIg5iS8H",
+     --->   "text":"RT @SofteamCadextan: Fin de journ\u00e9e avec une formation d'initiation \u00e0 l'Agile - #Agilit\u00e9 https:\/\/t.co\/2euIg5iS8H",
         "source":"\u003ca href=\"http:\/\/twitter.com\"
         rel=\"nofollow\"\u003eTwitter Web Client\u003c\/a\u003e","
         truncated":false,"in_reply_to_status_id":null,
@@ -99,13 +99,15 @@ public class AgileGrenobleLive {
 		*/
 		TwitterFilterSource twitterSource = new TwitterFilterSource(propertiesPath);
         //we can add several track term
-        twitterSource.trackTerm("#agile");
+        //twitterSource.trackTerm("#agile");
         twitterSource.trackTerm("#AgileGrenoble");
         twitterSource.trackTerm("#agileGrenoble2015");
         twitterSource.trackTerm("#agilegrenoble");
         twitterSource.trackTerm("#agilegrenoble2015");
         twitterSource.trackTerm("#ag2015");
         twitterSource.trackTerm("#ag15");
+        twitterSource.trackTerm("#Ag15");
+        twitterSource.trackTerm("#AG15");
         //twitterSource.trackTerm("grenoble");
 
         //define the language of the twitt
@@ -122,19 +124,21 @@ public class AgileGrenobleLive {
 
         DataStream<SimpleTwitter> streamSource = json.map(new SimpleTwitterConstructor());
 
-        DataStream<Tuple2<String, Integer>> streamTwittos = streamSource
-                    .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
-                            @Override
-                            public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
-                                return new Tuple2<String, Integer>(simpleTwitter.getTwitterName(),1);
-                            }
-                         })
+        DataStream<NameAndCount> streamTwittos = streamSource
+                .filter(new RemoveEmptySimpleTwitter())
+                .map(new MapFunction<SimpleTwitter, NameAndCount>() {
+                    @Override
+                    public NameAndCount map(SimpleTwitter simpleTwitter) throws Exception {
+                        return new NameAndCount(simpleTwitter.getTwitterName(), 1);
+                    }
+                })
                 .filter(new RemoveEmpty())
+                .filter(new RemoveFakeTwitter())
                     // group by words and sum their occurrences
                 .keyBy(0).sum(1);
-        ;
-        DataStream<Tuple2<String, Integer>> streamTwits = streamSource
-                .map(new MapFunction<SimpleTwitter,String>() {
+
+        DataStream<NameAndCount> streamTwits = streamSource
+                .map(new MapFunction<SimpleTwitter, String>() {
                     @Override
                     public String map(SimpleTwitter simpleTwitter) throws Exception {
                         return simpleTwitter.getTwittText();
@@ -143,10 +147,15 @@ public class AgileGrenobleLive {
                 .flatMap(new TokenizeFlatMap())
                 .filter(new RemoveLink())
                 .filter(new RemoveStopWord())
-                // group by words and sum their occurrences
-                .filter(new RemoveEmpty())
-                .keyBy(0).sum(1);
-
+                .keyBy(0).sum(1)
+                .map(new MapFunction<Tuple2<String, Integer>, NameAndCount>() {
+                    @Override
+                    public NameAndCount map(Tuple2<String, Integer> value) throws Exception {
+                        return new NameAndCount(value);
+                    }
+                });
+                // group by words and sum their occurrences;
+        /*
         DataStream<Tuple2<String, Integer>> streamGeo = streamSource
                 .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
                     @Override
@@ -154,7 +163,6 @@ public class AgileGrenobleLive {
                         return new Tuple2<String, Integer>(simpleTwitter.getGeo(),1);
                     }
                 })
-                .filter(new RemoveEmpty())
                 // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
@@ -165,18 +173,17 @@ public class AgileGrenobleLive {
                         return new Tuple2<String, Integer>(simpleTwitter.getCoordinate(),1);
                     }
                 })
-                .filter(new RemoveEmpty())
                 // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
+        */
 
         json.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);
         //streamSource.print();
         streamTwittos.writeAsText(outputPath + ".twittos", FileSystem.WriteMode.OVERWRITE);
-        //streamSource.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);
         streamTwits.writeAsText(outputPath+".twits", FileSystem.WriteMode.OVERWRITE);
-        streamGeo.writeAsText(outputPath+".geo", FileSystem.WriteMode.OVERWRITE);
-        streamCoordinate.writeAsText(outputPath+".coordinate", FileSystem.WriteMode.OVERWRITE);
+        //streamGeo.writeAsText(outputPath+".geo", FileSystem.WriteMode.OVERWRITE);
+        //streamCoordinate.writeAsText(outputPath+".coordinate", FileSystem.WriteMode.OVERWRITE);
 
 		try {
             if (LOG.isInfoEnabled()) {
@@ -246,11 +253,21 @@ public class AgileGrenobleLive {
         }
 
     }
-    public static class RemoveEmpty implements FilterFunction<Tuple2<String, Integer>> {
+    public static class RemoveEmptySimpleTwitter implements FilterFunction<SimpleTwitter> {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public boolean filter(Tuple2<String, Integer> value) throws Exception {
+        public boolean filter(SimpleTwitter value) throws Exception {
+            return  value != null ;
+        }
+
+    }
+
+    public static class RemoveEmpty implements FilterFunction<NameAndCount> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean filter(NameAndCount value) throws Exception {
             return  (value.f0 != null && !value.f0.startsWith(("uninitialized")));
         }
 
@@ -264,16 +281,48 @@ public class AgileGrenobleLive {
         }
 
     }
-    public static class RemoveStopWord  implements FilterFunction<Tuple2<String, Integer>> {
+    public static class RemoveFakeTwitter  implements FilterFunction<NameAndCount> {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public boolean filter(Tuple2<String, Integer> value) throws Exception {
-            return (value.f0 != null && value.f0.length()>2) ;
+        public boolean filter(NameAndCount value) throws Exception {
+            return (value.f0 != null
+                    && ! value.f0.contains("Retweets")
+                    && ! value.f0.contains("France")
+                    && ! value.f0.contains("Music")) ;
         }
 
     }
 
+    public static class RemoveStopWord  implements FilterFunction<Tuple2<String, Integer>> {
+        private static final long serialVersionUID = 1L;
+        public static final Pattern NOT_WORD_PATTERN = Pattern.compile("^[^\\w]*$");
+
+        @Override
+        public boolean filter(Tuple2<String, Integer> value) throws Exception {
+            String word = value.f0;
+            return (word != null && word.length()>4 && !isUninitialized(word) && !isAg15Tag(word) && !isOnlySymbols(word)) ;
+        }
+         public boolean isAg15Tag(String value){
+           return "#AG15".equalsIgnoreCase(value);
+        }
+        public boolean isUninitialized(String value){
+            return "uninitialized".equalsIgnoreCase(value);
+        }
+
+        public boolean isOnlySymbols(String value){
+            return NOT_WORD_PATTERN.matcher(value).matches();
+        }
+    }
+    public static class RemoveNotEnoughOccurence  implements FilterFunction<Tuple2<String, Integer>> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean filter(Tuple2<String, Integer> value) throws Exception {
+            return (value.f1 > 2) ;
+        }
+
+    }
 
     public static class SimpleTwitterConstructor implements MapFunction<String, SimpleTwitter> {
         private static final long serialVersionUID = 1L;
