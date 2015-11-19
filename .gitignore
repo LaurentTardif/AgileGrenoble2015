@@ -1,2 +1,7 @@
 *~
 target
+BackEnd/.idea/
+BackEnd/.project
+BackEnd/.settings/
+BackEnd/runTwitterXavier.sh
+twitterXavier.properties
