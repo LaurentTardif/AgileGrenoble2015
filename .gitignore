@@ -5,3 +5,5 @@ BackEnd/.project
 BackEnd/.settings/
 BackEnd/runTwitterXavier.sh
 twitterXavier.properties
+*.txt
+*.iml
