@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.useless;
 
+import org.agile.grenoble.twitter.twitter.TwitterStreamSource;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.agile.grenoble.twitter.JSONParseFlatMap;
-import org.agile.grenoble.twitter.TwitterSource;
-import org.agile.grenoble.twitter.TwitterStreamData;
+import org.agile.grenoble.twitter.twitter.JSONParseFlatMap;
 import org.apache.flink.util.Collector;
 import org.apache.sling.commons.json.JSONException;
 
@@ -57,15 +56,6 @@ public class TwitterStream {
 		if (!parseParameters(args)) {
 			return;
 		}
-/*
-		System.setProperty("http.proxySet", "true");
-		System.setProperty("http.proxyHost", "frproxy.persistent.co.in");
-		System.setProperty("http.proxyPort", "8080");
-		System.setProperty("https.proxySet", "true");
-		System.setProperty("https.proxyHost", "frproxy.persistent.co.in");
-		System.setProperty("https.proxyPort", "8080");
-*/		
-
 		// set up the execution environment
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -163,7 +153,7 @@ public class TwitterStream {
 	private static DataStream<String> getTextDataStream(StreamExecutionEnvironment env) {
 		if (fileInput) {
 			// read the text file from given input path
-			return env.addSource(new TwitterSource(propertiesPath));
+			return env.addSource(new TwitterStreamSource(propertiesPath));
 		} else {
 			// get default test text data
 			return env.fromElements(TwitterStreamData.TEXTS);

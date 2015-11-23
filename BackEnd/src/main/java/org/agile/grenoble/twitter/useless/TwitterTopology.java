@@ -15,18 +15,19 @@
 * limitations under the License.
 */
 
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.useless;
 
+import org.agile.grenoble.twitter.twitter.TwitterStreamSource;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.agile.grenoble.twitter.JSONParseFlatMap;
+import org.agile.grenoble.twitter.twitter.JSONParseFlatMap;
 import org.apache.flink.util.Collector;
 import org.apache.sling.commons.json.JSONException;
 
 /**
-* This program demonstrate the use of TwitterSource.
+* This program demonstrate the use of TwitterStreamSource.
 * Its aim is to count the frequency of the languages of tweets
 */
 public class TwitterTopology {
@@ -69,7 +70,7 @@ public class TwitterTopology {
 
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		DataStream<String> streamSource = env.addSource(new TwitterSource(path, NUMBEROFTWEETS));
+		DataStream<String> streamSource = env.addSource(new TwitterStreamSource(path, NUMBEROFTWEETS));
 
 
 		DataStream<Tuple2<String, Integer>> dataStream = streamSource

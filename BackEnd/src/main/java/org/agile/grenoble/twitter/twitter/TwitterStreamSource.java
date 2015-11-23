@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.twitter;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -43,9 +43,9 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
  * Twitter. This is not a parallel source because the Twitter API only allows
  * two concurrent connections.
  */
-public class TwitterSource extends RichSourceFunction<String> {
+public class TwitterStreamSource extends RichSourceFunction<String> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(TwitterSource.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TwitterStreamSource.class);
 
 	private static final long serialVersionUID = 1L;
 	private String authPath;
@@ -60,19 +60,19 @@ public class TwitterSource extends RichSourceFunction<String> {
 	private transient volatile boolean isRunning;
 
 	/**
-	 * Create {@link TwitterSource} for streaming
+	 * Create {@link TwitterStreamSource} for streaming
 	 * 
 	 * @param authPath
 	 *            Location of the properties file containing the required
 	 *            authentication information.
 	 */
-	public TwitterSource(String authPath) {
+	public TwitterStreamSource(String authPath) {
 		this.authPath = authPath;
 		maxNumberOfTweets = -1;
 	}
 
 	/**
-	 * Create {@link TwitterSource} to collect finite number of tweets
+	 * Create {@link TwitterStreamSource} to collect finite number of tweets
 	 * 
 	 * @param authPath
 	 *            Location of the properties file containing the required
@@ -80,7 +80,7 @@ public class TwitterSource extends RichSourceFunction<String> {
 	 * @param numberOfTweets
 	 * 
 	 */
-	public TwitterSource(String authPath, int numberOfTweets) {
+	public TwitterStreamSource(String authPath, int numberOfTweets) {
 		this.authPath = authPath;
 		this.maxNumberOfTweets = numberOfTweets;
 	}
@@ -189,7 +189,7 @@ public class TwitterSource extends RichSourceFunction<String> {
 	}
 
 	/**
-	 * This function tells how long TwitterSource waits for the tweets.
+	 * This function tells how long TwitterStreamSource waits for the tweets.
 	 * 
 	 * @return Number of second.
 	 */
@@ -198,7 +198,7 @@ public class TwitterSource extends RichSourceFunction<String> {
 	}
 
 	/**
-	 * This function sets how long TwitterSource should wait for the tweets.
+	 * This function sets how long TwitterStreamSource should wait for the tweets.
 	 * 
 	 * @param waitSec
 	 *            The desired value.

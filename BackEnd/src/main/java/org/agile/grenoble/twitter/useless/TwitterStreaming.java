@@ -15,13 +15,14 @@
 * limitations under the License.
 */
 
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.useless;
 
+import org.agile.grenoble.twitter.twitter.TwitterStreamSource;
 import org.apache.flink.api.java.tuple.Tuple5;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
-import org.agile.grenoble.twitter.JSONParseFlatMap;
+import org.agile.grenoble.twitter.twitter.JSONParseFlatMap;
 import org.apache.flink.util.Collector;
 import org.apache.sling.commons.json.JSONException;
 import org.slf4j.Logger;
@@ -86,7 +87,7 @@ public class TwitterStreaming {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment
 				.createLocalEnvironment(PARALLELISM);
 
-		DataStream<String> streamSource = env.addSource(new TwitterSource(path, NUMBEROFTWEETS))
+		DataStream<String> streamSource = env.addSource(new TwitterStreamSource(path, NUMBEROFTWEETS))
 				.setParallelism(SOURCE_PARALLELISM);
 
 		DataStream<Tuple5<Long, Integer, String, String, String>> selectedDataStream = streamSource

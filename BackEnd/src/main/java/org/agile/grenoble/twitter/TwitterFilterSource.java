@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.agile.grenoble.twitter.twitter.TwitterStreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +35,10 @@ import com.twitter.hbc.httpclient.auth.Authentication;
 
 /**
  * 
- * An extension of {@link TwitterSource} by filter parameters. This extension
+ * An extension of {@link TwitterStreamSource} by filter parameters. This extension
  * enables to filter the twitter stream by user defined parameters.
  */
-public class TwitterFilterSource extends TwitterSource {
+public class TwitterFilterSource extends TwitterStreamSource {
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(TwitterFilterSource.class);

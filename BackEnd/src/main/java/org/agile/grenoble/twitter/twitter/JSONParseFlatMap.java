@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.twitter;
 
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.sling.commons.json.JSONException;

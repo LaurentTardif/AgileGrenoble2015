@@ -17,11 +17,13 @@
 
 package org.agile.grenoble.twitter;
 
+import org.agile.grenoble.twitter.twitter.JSONParseFlatMap;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.core.fs.FileSystem;
+import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
@@ -55,6 +57,8 @@ public class AgileGrenobleLive {
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment
 				.getExecutionEnvironment();
 
+
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         /* example de tweet in json
 
@@ -115,20 +119,25 @@ public class AgileGrenobleLive {
         twitterSource.filterLanguage("en");
 
 
-        DataStream<String> staticjson = env.readTextFile("/home/adminpsl/flinkDemo/twits.txt");
+        TwitterHistorySource twitterHistory = new TwitterHistorySource(propertiesPath);
+        //TODO this function is a temporary fake, need to be implemented
+        twitterHistory.trackTerm("ag15");
+        DataStream<String> staticjson = env.addSource(twitterHistory);
+
+        //DataStream<String> staticjson = env.readTextFile("/home/adminpsl/flinkDemo/twits.txt");
 
         //build the twitt stream (it will be in json) then mapped to a stream of simpleTwitter object
 		DataStream<String> dynamicjson = env.addSource(twitterSource);
 
         DataStream<String> json = dynamicjson.union(staticjson);
 
-        DataStream<SimpleTwitter> streamSource = json.map(new SimpleTwitterConstructor());
+        DataStream<Tweet> streamSource = json.map(new SimpleTwitterConstructor());
 
         DataStream<NameAndCount> streamTwittos = streamSource
                 .filter(new RemoveEmptySimpleTwitter())
-                .map(new MapFunction<SimpleTwitter, NameAndCount>() {
+                .map(new MapFunction<Tweet, NameAndCount>() {
                     @Override
-                    public NameAndCount map(SimpleTwitter simpleTwitter) throws Exception {
+                    public NameAndCount map(Tweet simpleTwitter) throws Exception {
                         return new NameAndCount(simpleTwitter.getTwitterName(), 1);
                     }
                 })
@@ -138,12 +147,13 @@ public class AgileGrenobleLive {
                 .keyBy(0).sum(1);
 
         DataStream<NameAndCount> streamTwits = streamSource
-                .map(new MapFunction<SimpleTwitter, String>() {
+                .map(new MapFunction<Tweet, String>() {
                     @Override
-                    public String map(SimpleTwitter simpleTwitter) throws Exception {
+                    public String map(Tweet simpleTwitter) throws Exception {
                         return simpleTwitter.getTwittText();
                     }
                 })
+                //.timeWindowAll(Time.of(5, TimeUnit.SECONDS), Time.of(1, TimeUnit.SECONDS))
                 .flatMap(new TokenizeFlatMap())
                 .filter(new RemoveLink())
                 .filter(new RemoveStopWord())
@@ -157,9 +167,9 @@ public class AgileGrenobleLive {
                 // group by words and sum their occurrences;
         /*
         DataStream<Tuple2<String, Integer>> streamGeo = streamSource
-                .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
+                .map(new MapFunction<Tweet, Tuple2<String, Integer>>() {
                     @Override
-                    public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
+                    public Tuple2<String, Integer> map(Tweet simpleTwitter) throws Exception {
                         return new Tuple2<String, Integer>(simpleTwitter.getGeo(),1);
                     }
                 })
@@ -167,9 +177,9 @@ public class AgileGrenobleLive {
                 .keyBy(0).sum(1);
 
         DataStream<Tuple2<String, Integer>> streamCoordinate = streamSource
-                .map(new MapFunction<SimpleTwitter, Tuple2<String, Integer>>() {
+                .map(new MapFunction<Tweet, Tuple2<String, Integer>>() {
                     @Override
-                    public Tuple2<String, Integer> map(SimpleTwitter simpleTwitter) throws Exception {
+                    public Tuple2<String, Integer> map(Tweet simpleTwitter) throws Exception {
                         return new Tuple2<String, Integer>(simpleTwitter.getCoordinate(),1);
                     }
                 })
@@ -247,17 +257,17 @@ public class AgileGrenobleLive {
                 String result = tokenizer.nextToken().replaceAll("\\s*", "").toLowerCase();
 
                 if (result != null && !result.equals("")) {
-                    out.collect(new Tuple2<String, Integer>(result, 1));
+                    out.collect(new Tuple2<String, Integer>(result.trim().replace(",", "").replace("#", ""), 1));
                 }
             }
         }
 
     }
-    public static class RemoveEmptySimpleTwitter implements FilterFunction<SimpleTwitter> {
+    public static class RemoveEmptySimpleTwitter implements FilterFunction<Tweet> {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public boolean filter(SimpleTwitter value) throws Exception {
+        public boolean filter(Tweet value) throws Exception {
             return  value != null ;
         }
 
@@ -301,9 +311,18 @@ public class AgileGrenobleLive {
         @Override
         public boolean filter(Tuple2<String, Integer> value) throws Exception {
             String word = value.f0;
-            return (word != null && word.length()>4 && !isUninitialized(word) && !isAg15Tag(word) && !isOnlySymbols(word)) ;
+            return (word != null && word.length()>4
+                    && !isUninitialized(word)
+                    && !isAg15Tag(word)
+                    && !isOnlySymbols(word))
+                    && !isTwittos(word);
         }
-         public boolean isAg15Tag(String value){
+
+        private boolean isTwittos(String word) {
+            return word.startsWith("@");
+        }
+
+        public boolean isAg15Tag(String value){
            return "#AG15".equalsIgnoreCase(value);
         }
         public boolean isUninitialized(String value){
@@ -324,11 +343,11 @@ public class AgileGrenobleLive {
 
     }
 
-    public static class SimpleTwitterConstructor implements MapFunction<String, SimpleTwitter> {
+    public static class SimpleTwitterConstructor implements MapFunction<String, Tweet> {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public SimpleTwitter map(String s)
+        public Tweet map(String s)
         throws Exception {
             String text="uninitialized text" ,
                     name ="uninitialized name",
@@ -356,7 +375,7 @@ public class AgileGrenobleLive {
                 System.err.println("Fail to collect coordinates")	;
             }
 
-            SimpleTwitter st = new SimpleTwitter(name,text,geo,coordinate) ;
+            Tweet st = new Tweet(name,text,geo,coordinate) ;
             LOG.info("Collect a twitt from " + st.getTwitterName());
             return st;
             //c.collect(s);

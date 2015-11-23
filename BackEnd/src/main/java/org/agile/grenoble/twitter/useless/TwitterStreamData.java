@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.useless;
 
 //example data looking like tweets, but not acquired from Twitter
 public class TwitterStreamData {

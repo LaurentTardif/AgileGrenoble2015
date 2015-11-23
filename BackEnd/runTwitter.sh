@@ -10,7 +10,7 @@ cp ~/AgileGrenoble2015/BackEnd/target/flink-demo-twitter-1.0-SNAPSHOT.jar ~/flin
 ./start-local-streaming.sh
 
 #run the default twitter example
-#./flink run -c org.agile.grenoble.twitter.TwitterStream /home/adminpsl/flink/build-target/lib/flink-demo-twitter-1.0-SNAPSHOT.jar /home/adminpsl/flinkDemo/twitter.properties  /tmp/out.txt
+#./flink run -c org.agile.grenoble.twitter.useless.TwitterStream /home/adminpsl/flink/build-target/lib/flink-demo-twitter-1.0-SNAPSHOT.jar /home/adminpsl/flinkDemo/twitter.properties  /tmp/out.txt
 
 
 #run the filter twitter example
