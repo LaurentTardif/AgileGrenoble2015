@@ -119,12 +119,9 @@ public class AgileGrenobleLive {
         twitterSource.filterLanguage("en");
 
 
-        TwitterHistorySource twitterHistory = new TwitterHistorySource(propertiesPath);
-        //TODO this function is a temporary fake, need to be implemented
-        twitterHistory.trackTerm("ag15");
-        DataStream<String> staticjson = env.addSource(twitterHistory);
 
-        //DataStream<String> staticjson = env.readTextFile("/home/adminpsl/flinkDemo/twits.txt");
+
+        DataStream<String> staticjson = env.readTextFile("/home/adminpsl/flinkDemo/twits.txt");
 
         //build the twitt stream (it will be in json) then mapped to a stream of simpleTwitter object
 		DataStream<String> dynamicjson = env.addSource(twitterSource);
