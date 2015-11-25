@@ -16,7 +16,12 @@ public class Tweet {
         geo=g;
         coordinate = c;
     }
-
+    public Tweet(String n, String t) {
+        name = n == null ? null : n.trim();
+        tweet = t == null ? null : t.trim();
+        geo="On the moon";
+        coordinate = "Moon coordinate";
+    }
     String getGeo() {return geo;}
     String getCoordinate() {return coordinate;}
 

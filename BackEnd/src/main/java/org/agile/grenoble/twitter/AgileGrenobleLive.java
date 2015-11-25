@@ -41,7 +41,10 @@ import java.util.regex.Pattern;
 public class AgileGrenobleLive {
 
 
-
+    private static boolean fileInput = false;
+    private static boolean fileOutput = false;
+    private static String propertiesPath;
+    private static String outputPath;
     private static final Logger LOG = LoggerFactory.getLogger(AgileGrenobleLive.class);
 	/**
 	 * path to the twitter properties
@@ -54,44 +57,12 @@ public class AgileGrenobleLive {
 			System.exit (1);
 		};
 
-		final StreamExecutionEnvironment env = StreamExecutionEnvironment
-				.getExecutionEnvironment();
+        final String historyTupleFilePath = "/home/adminpsl/flinkDemo/historyTuple.txt";
+		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        /* example de tweet in json
-
-        {"created_at":"Tue Nov 10 14:46:15 +0000 2015",
-        "id":664091704534933504,"
-        id_str":"664091704534933504",
-     --->   "text":"RT @SofteamCadextan: Fin de journ\u00e9e avec une formation d'initiation \u00e0 l'Agile - #Agilit\u00e9 https:\/\/t.co\/2euIg5iS8H",
-        "source":"\u003ca href=\"http:\/\/twitter.com\"
-        rel=\"nofollow\"\u003eTwitter Web Client\u003c\/a\u003e","
-        truncated":false,"in_reply_to_status_id":null,
-        "in_reply_to_status_id_str":null,"in_reply_to_user_id":null,
-        "in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,
-        "user":{
-            "id":216406867,"id_str":"216406867",
-            "name":"Laurent Fourmy","screen_name":"LaurentFourmy",
-            "location":"Sophia Antipolis","url":"http:\/\/www.softeam.fr","description":null,
-            "protected":false,"verified":false,"followers_count":46,"friends_count":76,
-            "listed_count":9,"favourites_count":4,"statuses_count":93,
-            "created_at":"Tue Nov 16 16:55:03 +0000 2010","utc_offset":null,"time_zone":null,"geo_enabled":false,
-            "lang":"fr","contributors_enabled":false,"is_translator":false,"profile_background_color":"C0DEED",
-            "profile_background_image_url":"http:\/\/abs.twimg.com\/images\/themes\/theme1\/bg.png",
-            "profile_background_image_url_https":"https:\/\/abs.twimg.com\/images\/themes\/theme1\/bg.png",
-            "profile_background_tile":false,"profile_link_color":"0084B4","profile_sidebar_border_color":"C0DEED",
-            "profile_sidebar_fill_color":"DDEEF6","profile_text_color":"333333","profile_use_background_image":true,
-            "profile_image_url":"http:\/\/pbs.twimg.com\/profile_images\/491945647994462209\/rVdUOy_V_normal.jpeg",
-            "profile_image_url_https":"https:\/\/pbs.twimg.com\/profile_images\/491945647994462209\/rVdUOy_V_normal.jpeg",
-            "profile_banner_url":"https:\/\/pbs.twimg.com\/profile_banners\/216406867\/1445534192","default_profile":true,
-            "default_profile_image":false,"following":null,"follow_request_sent":null,"notifications":null},
-          "geo":null,
-          "coordinates":null,"place":null,"contributors":null,
-          "retweeted_status":... }
-
-         */
 
 
 
@@ -112,7 +83,6 @@ public class AgileGrenobleLive {
         twitterSource.trackTerm("#ag15");
         twitterSource.trackTerm("#Ag15");
         twitterSource.trackTerm("#AG15");
-        //twitterSource.trackTerm("grenoble");
 
         //define the language of the twitt
         twitterSource.filterLanguage("fr");
@@ -120,17 +90,21 @@ public class AgileGrenobleLive {
 
 
 
+        DataStream<String> ListHistoryTuple = env.readTextFile(historyTupleFilePath);
+        DataStream<Tweet> FlowHistoryTweets = ListHistoryTuple.map(new SimpleTwitterConstructorFromTuple());
 
-        DataStream<String> staticjson = env.readTextFile("/home/adminpsl/flinkDemo/twits.txt");
+
 
         //build the twitt stream (it will be in json) then mapped to a stream of simpleTwitter object
-		DataStream<String> dynamicjson = env.addSource(twitterSource);
+		DataStream<String> RealTimeJsonTweets = env.addSource(twitterSource);
+        DataStream<Tweet> streamRealTimeTweets = RealTimeJsonTweets.map(new SimpleTwitterConstructorFromJson());
 
-        DataStream<String> json = dynamicjson.union(staticjson);
 
-        DataStream<Tweet> streamSource = json.map(new SimpleTwitterConstructor());
+        //merge both flow
+        DataStream<Tweet> AllTweets = FlowHistoryTweets.union(streamRealTimeTweets);
 
-        DataStream<NameAndCount> streamTwittos = streamSource
+
+        DataStream<NameAndCount> streamTwittos = streamRealTimeTweets
                 .filter(new RemoveEmptySimpleTwitter())
                 .map(new MapFunction<Tweet, NameAndCount>() {
                     @Override
@@ -143,7 +117,7 @@ public class AgileGrenobleLive {
                     // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
-        DataStream<NameAndCount> streamTwits = streamSource
+        DataStream<NameAndCount> streamTwits = streamRealTimeTweets
                 .map(new MapFunction<Tweet, String>() {
                     @Override
                     public String map(Tweet simpleTwitter) throws Exception {
@@ -163,7 +137,7 @@ public class AgileGrenobleLive {
                 });
                 // group by words and sum their occurrences;
         /*
-        DataStream<Tuple2<String, Integer>> streamGeo = streamSource
+        DataStream<Tuple2<String, Integer>> streamGeo = streamRealTimeTweets
                 .map(new MapFunction<Tweet, Tuple2<String, Integer>>() {
                     @Override
                     public Tuple2<String, Integer> map(Tweet simpleTwitter) throws Exception {
@@ -173,7 +147,7 @@ public class AgileGrenobleLive {
                 // group by words and sum their occurrences
                 .keyBy(0).sum(1);
 
-        DataStream<Tuple2<String, Integer>> streamCoordinate = streamSource
+        DataStream<Tuple2<String, Integer>> streamCoordinate = streamRealTimeTweets
                 .map(new MapFunction<Tweet, Tuple2<String, Integer>>() {
                     @Override
                     public Tuple2<String, Integer> map(Tweet simpleTwitter) throws Exception {
@@ -185,8 +159,8 @@ public class AgileGrenobleLive {
 
         */
 
-        json.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);
-        //streamSource.print();
+        RealTimeJsonTweets.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);
+        //streamRealTimeTweets.print();
         streamTwittos.writeAsText(outputPath + ".twittos", FileSystem.WriteMode.OVERWRITE);
         streamTwits.writeAsText(outputPath+".twits", FileSystem.WriteMode.OVERWRITE);
         //streamGeo.writeAsText(outputPath+".geo", FileSystem.WriteMode.OVERWRITE);
@@ -203,10 +177,7 @@ public class AgileGrenobleLive {
 		}
 	}
 
-	private static boolean fileInput = false;
-	private static boolean fileOutput = false;
-	private static String propertiesPath;
-	private static String outputPath;
+
 
 	private static boolean parseParameters(String[] args) {
 		if (args.length > 0) {
@@ -340,7 +311,71 @@ public class AgileGrenobleLive {
 
     }
 
-    public static class SimpleTwitterConstructor implements MapFunction<String, Tweet> {
+    /*
+          This class is an helper to build a SimpleTwitter object from a json collected in realtime
+          on the Twitter servers
+       */
+    public static class SimpleTwitterConstructorFromTuple implements MapFunction<String, Tweet> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Tweet map(String s)
+                throws Exception {
+            String text="uninitialized text" ,
+                   name ="uninitialized name" ;
+
+            if ( s != null && ! s.isEmpty())  {
+                    int ind = s.indexOf(' ');
+                    text = s.substring(0,ind);
+                    name = s.substring(ind);
+            }
+            Tweet st = new Tweet(name,text) ;
+            LOG.info("Collect a static twitt from " + st.getTwitterName());
+            return st;
+        }
+
+    }
+
+
+
+   /* example de tweet in json
+
+        {"created_at":"Tue Nov 10 14:46:15 +0000 2015",
+        "id":664091704534933504,"
+        id_str":"664091704534933504",
+     --->   "text":"RT @SofteamCadextan: Fin de journ\u00e9e avec une formation d'initiation \u00e0 l'Agile - #Agilit\u00e9 https:\/\/t.co\/2euIg5iS8H",
+        "source":"\u003ca href=\"http:\/\/twitter.com\"
+        rel=\"nofollow\"\u003eTwitter Web Client\u003c\/a\u003e","
+        truncated":false,"in_reply_to_status_id":null,
+        "in_reply_to_status_id_str":null,"in_reply_to_user_id":null,
+        "in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,
+        "user":{
+            "id":216406867,"id_str":"216406867",
+            "name":"Laurent Fourmy","screen_name":"LaurentFourmy",
+            "location":"Sophia Antipolis","url":"http:\/\/www.softeam.fr","description":null,
+            "protected":false,"verified":false,"followers_count":46,"friends_count":76,
+            "listed_count":9,"favourites_count":4,"statuses_count":93,
+            "created_at":"Tue Nov 16 16:55:03 +0000 2010","utc_offset":null,"time_zone":null,"geo_enabled":false,
+            "lang":"fr","contributors_enabled":false,"is_translator":false,"profile_background_color":"C0DEED",
+            "profile_background_image_url":"http:\/\/abs.twimg.com\/images\/themes\/theme1\/bg.png",
+            "profile_background_image_url_https":"https:\/\/abs.twimg.com\/images\/themes\/theme1\/bg.png",
+            "profile_background_tile":false,"profile_link_color":"0084B4","profile_sidebar_border_color":"C0DEED",
+            "profile_sidebar_fill_color":"DDEEF6","profile_text_color":"333333","profile_use_background_image":true,
+            "profile_image_url":"http:\/\/pbs.twimg.com\/profile_images\/491945647994462209\/rVdUOy_V_normal.jpeg",
+            "profile_image_url_https":"https:\/\/pbs.twimg.com\/profile_images\/491945647994462209\/rVdUOy_V_normal.jpeg",
+            "profile_banner_url":"https:\/\/pbs.twimg.com\/profile_banners\/216406867\/1445534192","default_profile":true,
+            "default_profile_image":false,"following":null,"follow_request_sent":null,"notifications":null},
+          "geo":null,
+          "coordinates":null,"place":null,"contributors":null,
+          "retweeted_status":... }
+
+         */
+
+    /*
+        This class is an helper to build a SimpleTwitter object from a json collected in realtime
+        on the Twitter servers
+     */
+    public static class SimpleTwitterConstructorFromJson implements MapFunction<String, Tweet> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -353,29 +388,20 @@ public class AgileGrenobleLive {
 
             try {
                 text = JSONParseFlatMap.getString(s, "text");
-            } catch (Exception e) {
-                System.err.println("Fail to collect text")	;
-            }
-            try {
                 name = JSONParseFlatMap.getString(s, "user.name");
-            } catch (Exception e) {
-                System.err.println("Fail to collect name")	;
-            }
-            try {
                 geo = JSONParseFlatMap.getString(s, "geo.coordinates");
-            } catch (Exception e) {
-                System.err.println("Fail to collect geo")	;
-            }
-            try {
                 coordinate = JSONParseFlatMap.getString(s, "user.location");
             } catch (Exception e) {
-                System.err.println("Fail to collect coordinates")	;
+                LOG.info("Fail to collect one of the data ");
+                LOG.info("text =>" + text) ;
+                LOG.info("name =>" + name) ;
+                LOG.info("geo =>" + geo) ;
+                LOG.info("coordinate =>" + coordinate) ;
             }
 
             Tweet st = new Tweet(name,text,geo,coordinate) ;
             LOG.info("Collect a twitt from " + st.getTwitterName());
             return st;
-            //c.collect(s);
         }
 
     }
