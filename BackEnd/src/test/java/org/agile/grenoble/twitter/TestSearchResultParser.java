@@ -1,5 +1,6 @@
 package org.agile.grenoble.twitter;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.agile.grenoble.twitter.Mappers.SimpleTwitterConstructorFromTuple;
 import org.agile.grenoble.twitter.streamData.Tweet;
@@ -35,7 +36,10 @@ public class TestSearchResultParser extends TestCase{
             Tweet currentTweet = simpleConstructor.map(searchResultLine);
             String post_id = currentTweet.getTwitterName();
             String post_text = currentTweet.getTwittText();
+            System.out.println("original post =>" + searchResultLine);
             System.out.println("post_id =>" + post_id);
+            Assert.assertNotNull(post_id);
+            Assert.assertNotNull(post_text);
         }
 
     }

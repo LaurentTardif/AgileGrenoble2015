@@ -5,6 +5,7 @@ import org.agile.grenoble.twitter.Mappers.JSONParser;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -28,43 +29,55 @@ public class TestJsonParser extends TestCase {
         List<String> jsonLines = Files.readAllLines(jsonPath) ;
 
         for (String jsonLine : jsonLines ) {
-            assertTrue("Basic test for framework validation" ,true);
-            //System.out.println("a line is read " + jsonLine );
             JSONParser parser = new JSONParser(jsonLine);
             String author = parser.parse("user.name").getString("retValue");
             String text = parser.parse("text").getString("retValue");
             String geo = parser.parse("geo").getString("retValue");
-
-            assertTrue("Basic test for framework validation" + author ,true);
-            System.out.println("The author found is  " + author);
-            System.out.println("The text found is  " + text);
+            Assert.assertNotNull(author);
+            Assert.assertEquals("Bad mapping of field during json parsing",author,"Laurent T");
+            Assert.assertNotNull(text);
+            Assert.assertNotNull(geo);
         }
     }
     @Test
     public void testParsingOfRealHistoryFile () throws IOException, JSONException,URISyntaxException {
         File jsonFile = new File(TestJsonParser.class.getClassLoader().getSystemResource("TestJsonParser/history.real.json").toURI());
         Path jsonPath = jsonFile.toPath();
-        System.out.println("The file is going to be read") ;
         List<String> jsonLines = Files.readAllLines(jsonPath) ;
         int size = jsonLines.size() ;
-        System.out.println("The file is read =>" +size +" line(s)") ;
+        Assert.assertEquals("The size of the file read is not the good one", size, 193398);
         StringBuffer fullText = new StringBuffer();
         int current = 0 ;
         for (String jsonLine : jsonLines ) {
-            //System.out.println(current +"/"+ size);current++;
             fullText.append(jsonLine.trim());
         }
-        System.out.println("The big object is created") ;
+        //System.out.println("The big object is created") ;
         JSONObject obj = new JSONObject(fullText.toString());
-        //String pageName = obj.getJSONObject("statuses").getString("pageName");
 
         JSONArray arr = obj.getJSONArray("statuses");
-        System.out.println("We have " + arr.length() + " status") ;
+        boolean foundOneAlfred = false ;
+        boolean foundOneLaurent = false ;
+        boolean foundOneAlexandre = false ;
         for (int i = 0; i < arr.length(); i++)
         {
-            String post_id = arr.getJSONObject(i).getString("text");
-            System.out.println("post_id ["+i+"] =>" + post_id);
+            //System.out.println("i=" + i);
+            String post = arr.getJSONObject(i).toString();
+            Assert.assertNotNull("One of the post read is null, json parsing must have an issue", post);
+            JSONParser parser = new JSONParser(post);
+            String author = parser.parse("user.name").getString("retValue");
+            String text = parser.parse("text").getString("retValue");
+            String geo = parser.parse("geo").getString("retValue");
+            Assert.assertNotNull(author);
+            Assert.assertNotNull(text);
+            Assert.assertNotNull(geo);
+
+
+            //System.out.println("author [" + i + "] =>" + author);
+            if (author.toLowerCase().contains("laurent"))  { foundOneLaurent=true ;}
+            if (author.toLowerCase().contains("alfred"))  { foundOneAlfred= true;  }
+            if (author.toLowerCase().contains("alexandre"))  {foundOneAlexandre= true; }
         }
+        Assert.assertTrue("Crazy tweeters are not found" , foundOneLaurent && foundOneAlfred && foundOneAlexandre) ;
 
     }
 
