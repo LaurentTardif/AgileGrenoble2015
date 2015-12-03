@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.agile.grenoble.twitter.twitter;
+package org.agile.grenoble.twitter.Mappers;
 
 import java.util.Arrays;
 import java.util.List;

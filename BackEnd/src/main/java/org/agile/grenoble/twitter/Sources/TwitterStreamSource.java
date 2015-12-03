@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.agile.grenoble.twitter.twitter;
+package org.agile.grenoble.twitter.Sources;
 
 import java.io.FileInputStream;
 import java.io.InputStream;

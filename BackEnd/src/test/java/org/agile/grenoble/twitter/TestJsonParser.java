@@ -1,7 +1,7 @@
 package org.agile.grenoble.twitter;
 
 import junit.framework.TestCase;
-import org.agile.grenoble.twitter.twitter.JSONParser;
+import org.agile.grenoble.twitter.Mappers.JSONParser;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
@@ -10,7 +10,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;

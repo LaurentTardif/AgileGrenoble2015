@@ -1,4 +1,4 @@
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.streamData;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;

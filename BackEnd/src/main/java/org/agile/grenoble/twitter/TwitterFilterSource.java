@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.agile.grenoble.twitter.twitter.TwitterStreamSource;
+import org.agile.grenoble.twitter.Sources.TwitterStreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

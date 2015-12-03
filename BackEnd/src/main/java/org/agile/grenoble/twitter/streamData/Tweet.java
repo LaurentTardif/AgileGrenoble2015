@@ -1,4 +1,4 @@
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.streamData;
 
 /**
  * Created by Laurent  on 12/11/15.
@@ -25,11 +25,11 @@ public class Tweet {
     String getGeo() {return geo;}
     String getCoordinate() {return coordinate;}
 
-    String getTwitterName() {
+    public String getTwitterName() {
         return name;
     }
 
-    String getTwittText() {
+    public String getTwittText() {
         return tweet;
     }
 }
