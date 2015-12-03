@@ -26,13 +26,12 @@ public class RemoveStopWord  implements FilterFunction<Tuple2<String, Integer>> 
         return word.startsWith("@") || word.startsWith(".@") ;
     }
 
-    //Grenoble
-    //public boolean isAg15Tag(String value){return "#AG15".equalsIgnoreCase(value); }
 
-    //Paris
-    //public boolean isAg15Tag(String value){return "at2015".equalsIgnoreCase(value) ||"agiletour".equalsIgnoreCase(value) || "agiletourparis".equalsIgnoreCase(value); }
-
-    //Toulouse
+    /**
+     * This function tell if the word in parameter is in the stopWord List
+     * @param value the string to check
+     * @return true if the word is in the stopword list
+     */
     public static boolean isStopWord(String value){return  "agiletourtoulouse".equalsIgnoreCase(value)
             || "agiletour".equalsIgnoreCase(value)
             || "agileparis".equalsIgnoreCase(value)
@@ -41,6 +40,7 @@ public class RemoveStopWord  implements FilterFunction<Tuple2<String, Integer>> 
             || "agile".equalsIgnoreCase(value)
             || "cest".equalsIgnoreCase(value)
             || "attls".equalsIgnoreCase(value); }
+
     public boolean isUninitialized(String value){
         return "uninitialized".equalsIgnoreCase(value);
     }

@@ -80,30 +80,20 @@ public class AgileDoubleStreamLive {
 
 
 
-		/*TwitterFilterSource twitterFirstStream = new TwitterFilterSource(
-				TwitterFilterSourceExample.class.getResource(propertiesPath)
-						.getFile());
-		*/
 		TwitterFilterSource twitterFirstStream = new TwitterFilterSource(propertiesPath);
         //we can add several track term
-        //twitterFirstStream.trackTerm("#agile");
         twitterFirstStream.trackTerms(firstTrackedTermsCollection);
 
         //define the language of the twitt
         twitterFirstStream.filterLanguages(firstTrackedLaguageCollection);
 
-
-
         TwitterFilterSource twitterSecondStream = new TwitterFilterSource(propertiesPath);
         //we can add several track term
-        //twitterFirstStream.trackTerm("#agile");
         twitterSecondStream.trackTerms(secondTrackedTermsCollection);
 
 
         //define the language of the twitt
-
         twitterSecondStream.filterLanguages(secondTrackedLaguageCollection);
-
 
 
 

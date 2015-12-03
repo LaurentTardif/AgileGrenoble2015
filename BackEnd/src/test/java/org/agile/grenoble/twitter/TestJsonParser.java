@@ -22,11 +22,8 @@ public class TestJsonParser extends TestCase {
 
     @Test
     public void testParsingOfHistoryFile () throws IOException, JSONException, URISyntaxException {
-        assertTrue("Basic test for framework validation", true);
 
-        //URL url = getClass().getResource("TestJsonParser/history.json");
-        //File jsonFile = new File(url.toURI());
-        File jsonFile = new File("/home/adminpsl/AgileGrenoble2015/BackEnd/src/test/resources/TestJsonParser/history.json");
+        File jsonFile = new File(TestJsonParser.class.getClassLoader().getSystemResource("TestJsonParser/history.json").toURI());
         Path jsonPath = jsonFile.toPath();
         List<String> jsonLines = Files.readAllLines(jsonPath) ;
 
@@ -37,15 +34,15 @@ public class TestJsonParser extends TestCase {
             String author = parser.parse("user.name").getString("retValue");
             String text = parser.parse("text").getString("retValue");
             String geo = parser.parse("geo").getString("retValue");
+
             assertTrue("Basic test for framework validation" + author ,true);
             System.out.println("The author found is  " + author);
             System.out.println("The text found is  " + text);
         }
     }
     @Test
-    public void testParsingOfSearchFile () throws IOException, JSONException {
-        assertTrue("Basic test for framework validation", true);
-        File jsonFile = new File("/home/adminpsl/AgileGrenoble2015/BackEnd/src/test/resources/TestJsonParser/history.json.v0");
+    public void testParsingOfRealHistoryFile () throws IOException, JSONException,URISyntaxException {
+        File jsonFile = new File(TestJsonParser.class.getClassLoader().getSystemResource("TestJsonParser/history.real.json").toURI());
         Path jsonPath = jsonFile.toPath();
         System.out.println("The file is going to be read") ;
         List<String> jsonLines = Files.readAllLines(jsonPath) ;
@@ -70,6 +67,9 @@ public class TestJsonParser extends TestCase {
         }
 
     }
+
+
+
 
 
 }

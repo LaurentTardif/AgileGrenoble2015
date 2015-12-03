@@ -7,20 +7,23 @@ import org.junit.Test;
 
 
 
-public class TestFilters extends TestCase{
+public class TestFilters extends TestCase {
 
 
     @Test
     public void testRemoveStopWord () throws  Exception{
         RemoveStopWord remover = new RemoveStopWord();
+
+        //check if agile tour name are removed
         assertFalse(remover.filter(new Tuple2<String, Integer>("attls", 1)));
         assertFalse(remover.filter(new Tuple2<String, Integer>("agiletour", 1)));
         assertFalse(remover.filter(new Tuple2<String, Integer>("atnantes", 1)));
         assertFalse(remover.filter(new Tuple2<String,Integer>("bon",1)));
         assertFalse(remover.filter(new Tuple2<String, Integer>("cest", 1)));
+
+        //check if some normal case works
         assertTrue(remover.filter(new Tuple2<String, Integer>("genial", 1)));
         assertTrue(remover.filter(new Tuple2<String, Integer>("bonheur", 1)));
-
     }
 
 }
