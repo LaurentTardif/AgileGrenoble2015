@@ -26,14 +26,13 @@ public class AgileSimpleStreamHistory {
 
     private static boolean fileInput = false;
     private static boolean fileOutput = false;
+    /** path to the twitter properties   */
     private static String propertiesPath;
-    //private static String outputPath;
     private static String specificSuffix = null ;
 
     private static final Logger LOG = LoggerFactory.getLogger(AgileDoubleStreamLive.class);
-    /**
-     * path to the twitter properties
-     */
+
+
 
 
     public static void main(String[] args) {
@@ -47,8 +46,12 @@ public class AgileSimpleStreamHistory {
         String historyTupleFilePath = "/home/adminpsl/flinkDemo/historyTuple.txt";
         String historyLiveJsonFilePath = "/home/adminpsl/flinkDemo/historyLive.json";
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        process(outputPathPrefix, historyTupleFilePath, historyLiveJsonFilePath, env);
+    }
 
 
+
+    static void process(String outputPathPrefix, String historyTupleFilePath, String historyLiveJsonFilePath, StreamExecutionEnvironment env) {
         if (specificSuffix!= null && !StringUtils.isEmpty(specificSuffix)) {
             historyTupleFilePath+="."+specificSuffix;
             historyLiveJsonFilePath+="."+specificSuffix;
@@ -57,8 +60,6 @@ public class AgileSimpleStreamHistory {
 
         DataStream<String> ListHistoryTuple = env.readTextFile(historyTupleFilePath);
         DataStream<Tweet> FlowHistoryTweets = ListHistoryTuple.map(new SimpleTwitterConstructorFromTuple());
-
-
 
 
         DataStream<String> HistoryJson = env.readTextFile(historyLiveJsonFilePath);
@@ -105,7 +106,7 @@ public class AgileSimpleStreamHistory {
                     }
                 });
 
-       AllJson.writeAsText(outputPathPrefix, FileSystem.WriteMode.OVERWRITE);
+        AllJson.writeAsText(outputPathPrefix, FileSystem.WriteMode.OVERWRITE);
 
         streamTwittos.writeAsText(outputPathPrefix + ".twittos", FileSystem.WriteMode.OVERWRITE);
         streamTwits.writeAsText(outputPathPrefix+".twits", FileSystem.WriteMode.OVERWRITE);
