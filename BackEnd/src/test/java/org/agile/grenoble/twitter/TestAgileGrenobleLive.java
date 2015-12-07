@@ -18,7 +18,6 @@ public class TestAgileGrenobleLive extends TestCase{
 
     @Test
     public void testSimpleRun () throws URISyntaxException {
-        assertTrue("Basic test for framework validation",true);
         Configuration conf = new Configuration();
         conf.setFloat(ConfigConstants.TASK_MANAGER_MEMORY_FRACTION_KEY, 0.5f);
         StreamExecutionEnvironment env =  StreamExecutionEnvironment.createLocalEnvironment();
@@ -29,7 +28,9 @@ public class TestAgileGrenobleLive extends TestCase{
 
         AgileSimpleStreamHistory.process(outputPathPrefix,historyTupleFilePath,historyLiveJsonFilePath,env);
 
-
+        //we should check at least one file exist, and content not null
+        //the correctness of flow and algorithm will be validated somewhere else
+        assertTrue("Basic test for framework validation",true);
     }
 
 

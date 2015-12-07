@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -26,7 +27,7 @@ public class TestJsonParser extends TestCase {
 
         File jsonFile = new File(TestJsonParser.class.getClassLoader().getSystemResource("TestJsonParser/history.json").toURI());
         Path jsonPath = jsonFile.toPath();
-        List<String> jsonLines = Files.readAllLines(jsonPath) ;
+        List<String> jsonLines = Files.readAllLines(jsonPath, Charset.forName("UTF-8")) ;
 
         for (String jsonLine : jsonLines ) {
             JSONParser parser = new JSONParser(jsonLine);
@@ -43,7 +44,7 @@ public class TestJsonParser extends TestCase {
     public void testParsingOfRealHistoryFile () throws IOException, JSONException,URISyntaxException {
         File jsonFile = new File(TestJsonParser.class.getClassLoader().getSystemResource("TestJsonParser/history.real.json").toURI());
         Path jsonPath = jsonFile.toPath();
-        List<String> jsonLines = Files.readAllLines(jsonPath) ;
+        List<String> jsonLines = Files.readAllLines(jsonPath, Charset.forName("UTF-8")) ;
         int size = jsonLines.size() ;
         Assert.assertEquals("The size of the file read is not the good one", size, 193398);
         StringBuffer fullText = new StringBuffer();
