@@ -160,6 +160,22 @@ under the License.
 					</execution>
 				</executions>
 			</plugin>
+            <!-- Mutation testing -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>LATEST</version>
+                <configuration>
+                    <targetClasses>
+                        <!-- <param>com.your.package.root.want.to.mutate*</param> -->
+                    <param>org.agile.grenoble.twitter.*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <!-- <param>com.your.package.root*</param> -->
+                        <param>org.agile.grenoble.twitter.*</param>
+                    </targetTests>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 
