@@ -1,4 +1,4 @@
-package org.agile.grenoble.twitter.tokenizer;
+package org.agile.grenoble.twitter.Mappers;
 
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -18,7 +18,7 @@ public class TokenizeFlatMap extends RichFlatMapFunction<String, Tuple2<String, 
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void flatMap(String value, Collector<Tuple2<String, Integer>> out) throws Exception {
+    public void flatMap(String value, Collector<Tuple2<String, Integer>> out)  {
         StringTokenizer tokenizer = new StringTokenizer(value);
 
         // split the message

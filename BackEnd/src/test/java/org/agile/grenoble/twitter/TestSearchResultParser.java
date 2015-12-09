@@ -1,12 +1,9 @@
 package org.agile.grenoble.twitter;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
-import org.agile.grenoble.twitter.Mappers.SimpleTwitterConstructorFromTuple;
+import org.agile.grenoble.twitter.Mappers.TestJsonParser;
+import org.agile.grenoble.twitter.Mappers.TweetFromTuple;
 import org.agile.grenoble.twitter.streamData.Tweet;
-import org.apache.sling.commons.json.JSONArray;
-import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.JSONObject;
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
@@ -22,7 +19,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Created by adminpsl on 03/12/15.
+ * Created by Laurent on 03/12/15.
  */
 public class TestSearchResultParser {
 
@@ -43,15 +40,21 @@ public class TestSearchResultParser {
         System.out.println("The file is read =>" +size +" line(s)") ;
         StringBuffer fullText = new StringBuffer();
         int current = 0 ;
-        SimpleTwitterConstructorFromTuple simpleConstructor = new SimpleTwitterConstructorFromTuple();
+        TweetFromTuple simpleConstructor = new TweetFromTuple();
         for (String searchResultLine : searchResultLines ) {
             Tweet currentTweet = simpleConstructor.map(searchResultLine);
             String post_id = currentTweet.getTwitterName();
             String post_text = currentTweet.getTwittText();
+            String post_geo = currentTweet.getGeo() ;
+            String post_coordinate = currentTweet.getCoordinate() ;
             //System.out.println("original post =>" + searchResultLine);
             //System.out.println("post_id =>" + post_id);
             Assert.assertNotNull(post_id);
             Assert.assertNotNull(post_text);
+            Assert.assertNotNull(post_geo);
+            Assert.assertNotNull(post_coordinate);
+            Assert.assertEquals(post_geo, Tweet.Default_Geo);
+            Assert.assertEquals(post_coordinate, Tweet.Default_Coordinate);
         }
 
     }

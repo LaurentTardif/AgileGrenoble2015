@@ -1,5 +1,6 @@
-package org.agile.grenoble.twitter.filters;
+package org.agile.grenoble.twitter.Filters;
 
+import org.agile.grenoble.twitter.streamData.Tweet;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 
@@ -15,7 +16,8 @@ public class RemoveStopWord  implements FilterFunction<Tuple2<String, Integer>> 
     @Override
     public boolean filter(Tuple2<String, Integer> value) throws Exception {
         String word = value.f0;
-        return (word != null && word.length()>4
+        return (word != null
+                && word.length()>4
                 && !isUninitialized(word)
                 && !isStopWord(word)
                 && !isOnlySymbols(word))
@@ -42,7 +44,7 @@ public class RemoveStopWord  implements FilterFunction<Tuple2<String, Integer>> 
             || "attls".equalsIgnoreCase(value); }
 
     public boolean isUninitialized(String value){
-        return "uninitialized".equalsIgnoreCase(value);
+        return Tweet.Default_Text.equalsIgnoreCase(value);
     }
 
     public boolean isOnlySymbols(String value){

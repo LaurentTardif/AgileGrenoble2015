@@ -1,7 +1,6 @@
-package org.agile.grenoble.twitter;
+package org.agile.grenoble.twitter.Mappers;
 
 import junit.framework.TestCase;
-import org.agile.grenoble.twitter.Mappers.JSONParser;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
@@ -20,7 +19,6 @@ import java.util.List;
  * Created by adminpsl on 24/11/15.
  */
 public class TestJsonParser extends TestCase {
-
 
     @Test
     public void testParsingOfHistoryFile () throws IOException, JSONException, URISyntaxException {

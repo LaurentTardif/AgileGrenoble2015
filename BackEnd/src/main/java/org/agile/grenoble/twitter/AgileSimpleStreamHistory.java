@@ -1,23 +1,19 @@
 package org.agile.grenoble.twitter;
 
-import org.agile.grenoble.twitter.Mappers.SimpleTwitterConstructorFromJson;
-import org.agile.grenoble.twitter.Mappers.SimpleTwitterConstructorFromTuple;
-import org.agile.grenoble.twitter.filters.*;
+import org.agile.grenoble.twitter.Mappers.TweetFromJson;
+import org.agile.grenoble.twitter.Mappers.TweetFromTuple;
+import org.agile.grenoble.twitter.Filters.*;
 import org.agile.grenoble.twitter.streamData.NameAndCount;
 import org.agile.grenoble.twitter.streamData.Tweet;
-import org.agile.grenoble.twitter.tokenizer.TokenizeFlatMap;
+import org.agile.grenoble.twitter.Mappers.TokenizeFlatMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.core.fs.FileSystem;
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Created by adminpsl on 30/11/15.
@@ -59,7 +55,7 @@ public class AgileSimpleStreamHistory {
         }
 
         DataStream<String> ListHistoryTuple = env.readTextFile(historyTupleFilePath);
-        DataStream<Tweet> FlowHistoryTweets = ListHistoryTuple.map(new SimpleTwitterConstructorFromTuple());
+        DataStream<Tweet> FlowHistoryTweets = ListHistoryTuple.map(new TweetFromTuple());
 
 
         DataStream<String> HistoryJson = env.readTextFile(historyLiveJsonFilePath);
@@ -67,7 +63,7 @@ public class AgileSimpleStreamHistory {
 
         DataStream<String> AllJson = HistoryJson ;
 
-        DataStream<Tweet> streamRealTimeTweets = AllJson.map(new SimpleTwitterConstructorFromJson());
+        DataStream<Tweet> streamRealTimeTweets = AllJson.map(new TweetFromJson());
 
 
         //merge both flow
@@ -75,7 +71,7 @@ public class AgileSimpleStreamHistory {
 
 
         DataStream<NameAndCount> streamTwittos = AllTweets
-                .filter(new RemoveEmptySimpleTwitter())
+                .filter(new RemoveEmptyTweet())
                 .map(new MapFunction<Tweet, NameAndCount>() {
                     @Override
                     public NameAndCount map(Tweet simpleTwitter) throws Exception {

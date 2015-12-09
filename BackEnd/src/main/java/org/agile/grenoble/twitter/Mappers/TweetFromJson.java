@@ -44,22 +44,26 @@ import org.slf4j.LoggerFactory;
         This class is an helper to build a SimpleTwitter object from a json collected in realtime
         on the Twitter servers
      */
-public class SimpleTwitterConstructorFromJson implements MapFunction<String, Tweet> {
+public class TweetFromJson implements MapFunction<String, Tweet> {
     private static final long serialVersionUID = 1L;
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleTwitterConstructorFromJson.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TweetFromJson.class);
+
     @Override
-    public Tweet map(String s)
-            throws Exception {
-        String text="uninitialized text" ,
-                name ="uninitialized name",
-                geo = "uninitialized geo",
-                coordinate="uninitialized coordinate";
+    public Tweet map(String s) {
+
+        String text=Tweet.Default_Text ,
+               name =Tweet.Default_Name,
+               geo = Tweet.Default_Geo,
+               coordinate=Tweet.Default_Coordinate;
 
         try {
-            text = JSONParseFlatMap.getString(s, "text");
-            name = JSONParseFlatMap.getString(s, "user.name");
-            geo = JSONParseFlatMap.getString(s, "geo.coordinates");
-            coordinate = JSONParseFlatMap.getString(s, "user.location");
+            JSONParser parser = new JSONParser(s);
+
+            text = parser.parse("text").getString("retValue");
+            name = parser.parse("user.name").getString("retValue");
+            geo = parser.parse("geo.coordinates").getString("retValue");
+            coordinate = parser.parse("user.location").getString("retValue");
+
         } catch (Exception e) {
             LOG.info("Fail to collect one of the data ");
             LOG.info("text =>" + text) ;
