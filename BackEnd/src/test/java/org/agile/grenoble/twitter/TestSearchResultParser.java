@@ -9,6 +9,8 @@ import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +26,8 @@ import java.util.List;
 public class TestSearchResultParser {
 
 
+    private static final Logger LOG = LoggerFactory.getLogger(TestSearchResultParser.class);
+
     @Rule
     public ContiPerfRule i = new ContiPerfRule();
 
@@ -34,10 +38,10 @@ public class TestSearchResultParser {
     public void testParsingOfSearchResultFile () throws IOException, Exception,URISyntaxException {
         File jsonFile = new File(TestJsonParser.class.getClassLoader().getSystemResource("TestJsonParser/history.list").toURI());
         Path jsonPath = jsonFile.toPath();
-        System.out.println("The file is going to be read") ;
+        LOG.info("The file is going to be read") ;
         List<String> searchResultLines = Files.readAllLines(jsonPath, Charset.forName("UTF-8")) ;
         int size = searchResultLines.size() ;
-        System.out.println("The file is read =>" +size +" line(s)") ;
+        LOG.info("The file is read =>" +size +" line(s)") ;
         StringBuffer fullText = new StringBuffer();
         int current = 0 ;
         TweetFromTuple simpleConstructor = new TweetFromTuple();

@@ -19,6 +19,8 @@ public class TokenizeFlatMap extends RichFlatMapFunction<String, Tuple2<String, 
 
     @Override
     public void flatMap(String value, Collector<Tuple2<String, Integer>> out)  {
+        if (value == null || value.isEmpty() ) return ;
+
         StringTokenizer tokenizer = new StringTokenizer(value);
 
         // split the message

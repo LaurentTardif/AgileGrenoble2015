@@ -33,7 +33,7 @@ public class AgileSimpleStreamHistory {
 
     public static void main(String[] args) {
         if (!parseParameters(args)) {
-            System.out.println("Arguments fail!");
+            LOG.error("Arguments fail!");
             System.exit (1);
         };
 
@@ -133,9 +133,9 @@ public class AgileSimpleStreamHistory {
                 return false;
             }
         } else {
-            System.out.println("Executing TwitterStream example with built-in default data.");
-            System.out.println("  Provide parameters to read input data from a file.");
-            System.out.println("  USAGE: TwitterStream [<pathToPropertiesFile>] <result path>");
+            LOG.info("Executing TwitterStream example with built-in default data.");
+            LOG.info("  Provide parameters to read input data from a file.");
+            LOG.info("  USAGE: TwitterStream [<pathToPropertiesFile>] <result path>");
         }
         return true;
     }
