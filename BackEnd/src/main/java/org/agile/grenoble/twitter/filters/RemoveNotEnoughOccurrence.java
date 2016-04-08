@@ -8,7 +8,11 @@ import org.apache.flink.api.java.tuple.Tuple2;
  */
 public class RemoveNotEnoughOccurrence implements FilterFunction<Tuple2<String, Integer>> {
     private static final long serialVersionUID = 1L;
-    public static final int OccurrenceLimit = 2;
+    public static int OccurrenceLimit = 2;
+
+    public static void UpdateOccurenceLimit (int newLimit) {
+        OccurrenceLimit = newLimit;
+    }
 
     @Override
     public boolean filter(Tuple2<String, Integer> value) {

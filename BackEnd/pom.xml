@@ -30,7 +30,7 @@ under the License.
 		<relativePath>..</relativePath>
 	</parent>
 	-->
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<groupId>org.agile.grenoble.twitter</groupId>
 	<artifactId>flink-demo-twitter</artifactId>
 	<name>flink-demo-twitter</name>
@@ -41,7 +41,7 @@ under the License.
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-streaming-java</artifactId>
+			<artifactId>flink-streaming-java_2.10</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -57,13 +57,13 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-scala</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<artifactId>flink-scala_2.10</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-streaming-scala</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<artifactId>flink-streaming-scala_2.10</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

@@ -36,8 +36,6 @@ public class AgileSimpleStreamHistory {
             LOG.error("Arguments fail!");
             System.exit (1);
         };
-
-
         String outputPathPrefix = " /tmp/out.txt" ;
         String historyTupleFilePath = "/home/adminpsl/flinkDemo/historyTuple.txt";
         String historyLiveJsonFilePath = "/home/adminpsl/flinkDemo/historyLive.json";
@@ -53,6 +51,7 @@ public class AgileSimpleStreamHistory {
             historyLiveJsonFilePath+="."+specificSuffix;
             outputPathPrefix+="."+specificSuffix;
         }
+
 
         DataStream<String> ListHistoryTuple = env.readTextFile(historyTupleFilePath);
         DataStream<Tweet> FlowHistoryTweets = ListHistoryTuple.map(new TweetFromTuple());
@@ -113,8 +112,9 @@ public class AgileSimpleStreamHistory {
             }
             env.execute("Twitter Streaming Test");
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Twitter Streaming API tracking AGILE in progress",e);
+            }
         }
     }
 

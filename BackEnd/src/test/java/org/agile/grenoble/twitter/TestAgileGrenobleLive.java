@@ -20,6 +20,7 @@ public class TestAgileGrenobleLive extends TestCase{
     public void testSimpleRun () throws URISyntaxException {
         Configuration conf = new Configuration();
         conf.setFloat(ConfigConstants.TASK_MANAGER_MEMORY_FRACTION_KEY, 0.5f);
+        //conf.setFloat(ConfigConstants.TASK_MANAGER_MEMORY_SEGMENT_SIZE_KEY, 0.5f);
         StreamExecutionEnvironment env =  StreamExecutionEnvironment.createLocalEnvironment();
 
         String outputPathPrefix = System.getProperty("java.io.tmpdir") ;

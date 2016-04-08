@@ -133,8 +133,7 @@ public class AgileDoubleStreamLive {
                 })
                 .filter(new RemoveEmptyNameAndCount())
                 .filter(new RemoveFakeTwitter())
-                    // group by words and sum their occurrences
-                .keyBy(0).sum(1);
+                .keyBy(0).sum(1); //group by words and sum their occurrence
 
         DataStream<NameAndCount> streamTwits = AllTweets
                 .map(new MapFunction<Tweet, String>() {
@@ -147,7 +146,8 @@ public class AgileDoubleStreamLive {
                 .flatMap(new TokenizeFlatMap())
                 .filter(new RemoveLink())
                 .filter(new RemoveStopWord())
-                .keyBy(0).sum(1)
+                .keyBy(0)
+                .sum(1)
                 .map(new MapFunction<Tuple2<String, Integer>, NameAndCount>() {
                     @Override
                     public NameAndCount map(Tuple2<String, Integer> value) throws Exception {
