@@ -1,4 +1,4 @@
-package org.agile.grenoble.twitter.Filters;
+package org.agile.grenoble.twitter.filters;
 
 import org.agile.grenoble.twitter.streamData.NameAndCount;
 import org.apache.flink.api.common.functions.FilterFunction;

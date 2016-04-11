@@ -1,4 +1,4 @@
-package org.agile.grenoble.twitter.Filters;
+package org.agile.grenoble.twitter.filters;
 
 import junit.framework.TestCase;
 import org.agile.grenoble.twitter.streamData.NameAndCount;

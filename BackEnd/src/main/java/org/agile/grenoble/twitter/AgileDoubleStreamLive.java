@@ -19,7 +19,7 @@ package org.agile.grenoble.twitter;
 
 import org.agile.grenoble.twitter.Mappers.TweetFromJson;
 import org.agile.grenoble.twitter.Mappers.TweetFromTuple;
-import org.agile.grenoble.twitter.Filters.*;
+import org.agile.grenoble.twitter.filters.*;
 import org.agile.grenoble.twitter.streamData.NameAndCount;
 import org.agile.grenoble.twitter.streamData.Tweet;
 import org.agile.grenoble.twitter.Mappers.TokenizeFlatMap;
@@ -55,7 +55,7 @@ public class AgileDoubleStreamLive {
 
 	public static void main(String[] args) {
 		if (!parseParameters(args)) {
-			LOG.error("Arguments fail!");
+			LOG.error("Arguments fail! please read doc");
 			System.exit (1);
 		};
 
