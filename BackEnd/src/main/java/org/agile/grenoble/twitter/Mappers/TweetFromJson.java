@@ -70,6 +70,7 @@ public class TweetFromJson implements MapFunction<String, Tweet> {
             LOG.info("name =>" + name) ;
             LOG.info("geo =>" + geo) ;
             LOG.info("coordinate =>" + coordinate) ;
+            LOG.info("tweets raw : (" + s+")") ;
         }
 
         Tweet st = new Tweet(name,text,geo,coordinate) ;

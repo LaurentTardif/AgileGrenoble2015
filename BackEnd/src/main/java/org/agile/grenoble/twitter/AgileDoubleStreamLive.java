@@ -60,18 +60,18 @@ public class AgileDoubleStreamLive {
 		};
 
 
-        final String historyTupleFilePath = "/home/adminpsl/flinkDemo/historyTuple.txt";
-        final String historyLiveJsonFilePath = "/home/adminpsl/flinkDemo/historyLive.json";
+        final String historyTupleFilePath = "/tmp/historyTuple.txt";
+        final String historyLiveJsonFilePath = "/tmp/historyLive.json";
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        final Collection<String> firstTrackedTermsCollection =  Arrays.asList("#attls", "#agileToulouse") ;
+        final Collection<String> firstTrackedTermsCollection =  Arrays.asList("#MixIT", "#mixIT16","mixit") ;
         final Collection<String> firstTrackedLaguageCollection =  Arrays.asList("fr") ;
-        final String dedicatedFirstStreamOutputFileName = "attls_fr.json" ;
+        final String dedicatedFirstStreamOutputFileName = "mixIT_fr.json" ;
 
 
-        final Collection<String> secondTrackedTermsCollection =  Arrays.asList("#grenoble", "#agilegrenoble2015") ;
+        final Collection<String> secondTrackedTermsCollection =   Arrays.asList("#MixIT", "#mixIT16","mixit") ;
         final Collection<String> secondTrackedLaguageCollection =  Arrays.asList("en") ;
-        final String dedicatedSecondStreamOutputFileName = "attls_en.json" ;
+        final String dedicatedSecondStreamOutputFileName = "mixIT_en.json" ;
 
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
@@ -114,7 +114,7 @@ public class AgileDoubleStreamLive {
 
         DataStream<String> AllJson = HistoryJson
                     .union(RealTimeFirstStreamTweets)
-                    .union(RealTimeSecondStreamTweets);
+                .union(RealTimeSecondStreamTweets);
 
         DataStream<Tweet> streamRealTimeTweets = AllJson.map(new TweetFromJson());
 
@@ -177,7 +177,7 @@ public class AgileDoubleStreamLive {
                 .keyBy(0).sum(1);
 
         */
-        RealTimeSecondStreamTweets.writeAsText("/tmp/"+dedicatedSecondStreamOutputFileName, FileSystem.WriteMode.OVERWRITE);
+        //RealTimeSecondStreamTweets.writeAsText("/tmp/"+dedicatedSecondStreamOutputFileName, FileSystem.WriteMode.OVERWRITE);
         RealTimeFirstStreamTweets.writeAsText("/tmp/" + dedicatedFirstStreamOutputFileName, FileSystem.WriteMode.OVERWRITE);
 
         AllJson.writeAsText(outputPath, FileSystem.WriteMode.OVERWRITE);

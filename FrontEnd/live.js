@@ -1,6 +1,9 @@
 $(function () {
     
-    function displayTagsCloud(listStr) {
+    function displayTagsCloud(listStr, subTitle) {
+        
+        $("#subtitle").text(subTitle);
+        
         var list = JSON.parse(listStr);
 
         var max = _.max(list, function(tag){ return tag[1]; })[1];
@@ -31,24 +34,24 @@ $(function () {
             var countMap = _.map(list, function(tag){ return tag[1]; });
             var count = _.reduce(countMap, function(memo, num){ return memo + num; }, 0);
         
-            $("#compteur").text(count+" tweets #ag15");
+            $("#compteur").text(count+" tweets #MixIT #MixIT16");
             
-            displayTagsCloud(listStr);
+            displayTagsCloud(listStr, "Les auteurs");
         });
     }
 
     function reloadTwits() {
         $.get( "twits.txt", function( listStr ) {
-            displayTagsCloud(listStr);
+            displayTagsCloud(listStr, "Les mots");
         });
     }
 
     window.setInterval(reloadTwittos, 30000);
     
     window.setTimeout(function() {
-        window.setInterval(reloadTwits, 15000);        
+        window.setInterval(reloadTwits, 20000);        
         reloadTwits();
-    }, 5000);
+    }, 15000);
 
     reloadTwittos();
 });

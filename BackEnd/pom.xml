@@ -23,13 +23,6 @@ under the License.
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<!--<parent>
-		<groupId>org.apache.flink</groupId>
-		<artifactId>flink-streaming-connectors-parent</artifactId>
-		<version>0.9.1</version>
-		<relativePath>..</relativePath>
-	</parent>
-	-->
 	<version>1.0.1</version>
 	<groupId>org.agile.grenoble.twitter</groupId>
 	<artifactId>flink-demo-twitter</artifactId>
@@ -45,6 +38,11 @@ under the License.
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpcore</artifactId>
+		    <version>4.4</version>
+		</dependency>
 		<dependency>
 			<groupId>com.twitter</groupId>
 			<artifactId>hbc-core</artifactId>

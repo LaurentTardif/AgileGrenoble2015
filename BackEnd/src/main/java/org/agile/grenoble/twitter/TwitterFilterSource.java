@@ -33,6 +33,8 @@ import com.twitter.hbc.core.endpoint.Location;
 import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
 import com.twitter.hbc.httpclient.auth.Authentication;
 
+//import org.apache.flink.streaming.connectors.twitter ;
+
 /**
  * 
  * An extension of {@link TwitterStreamSource} by filter parameters. This extension
@@ -40,8 +42,7 @@ import com.twitter.hbc.httpclient.auth.Authentication;
  */
 public class TwitterFilterSource extends TwitterStreamSource {
 
-	private static final Logger LOG = LoggerFactory
-			.getLogger(TwitterFilterSource.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TwitterFilterSource.class);
 
 	private static final long serialVersionUID = 1L;
 
@@ -59,28 +60,9 @@ public class TwitterFilterSource extends TwitterStreamSource {
 
 	public TwitterFilterSource(String authPath) {
 		super(authPath);
+        LOG.info("creating a TwitterFilter Source") ;
 	}
 
-	@Override
-	protected void initializeConnection() {
-
-		if (LOG.isInfoEnabled()) {
-			LOG.info("Initializing Twitter Streaming API connection");
-		}
-		queue = new LinkedBlockingQueue<String>(queueSize);
-
-		StatusesFilterEndpoint endpoint = new StatusesFilterEndpoint();
-		configEndpoint(endpoint);
-		endpoint.stallWarnings(false);
-
-		Authentication auth = authenticate();
-
-		initializeClient(endpoint, auth);
-
-		if (LOG.isInfoEnabled()) {
-			LOG.info("Twitter Streaming API connection established successfully");
-		}
-	}
 
 	/**
 	 * This function configures the streaming endpoint
@@ -88,10 +70,16 @@ public class TwitterFilterSource extends TwitterStreamSource {
 	 * @param endpoint
 	 *            The streaming endpoint
 	 */
-	private void configEndpoint(StatusesFilterEndpoint endpoint) {
-		if (!trackTerms.isEmpty()) {
+
+    @Override
+    public void configEndpoint(StatusesFilterEndpoint endpoint) {
+
+        LOG.info("Using the configure End Point of TwitterFilter Source") ;
+        LOG.info("++TrackTerms size is  " + trackTerms.size()) ;
+        if (!trackTerms.isEmpty()) {
 			endpoint.trackTerms(trackTerms);
 		}
+        LOG.info("++languages size is  " + trackTerms.size()) ;
 		if (!languages.isEmpty()) {
 			endpoint.languages(languages);
 		}
@@ -101,11 +89,13 @@ public class TwitterFilterSource extends TwitterStreamSource {
 		if (!locations.isEmpty()) {
 			endpoint.locations(locations);
 		}
+        LOG.info("++queryParameters size is  " + queryParameters.size()) ;
 		if (!queryParameters.isEmpty()) {
 			for (Entry<String, String> entry : queryParameters.entrySet()) {
 				endpoint.addQueryParameter(entry.getKey(), entry.getValue());
 			}
 		}
+        LOG.info("++postParameters size is  " + postParameters.size()) ;
 		if (!postParameters.isEmpty()) {
 			for (Entry<String, String> entry : postParameters.entrySet()) {
 				endpoint.addPostParameter(entry.getKey(), entry.getValue());

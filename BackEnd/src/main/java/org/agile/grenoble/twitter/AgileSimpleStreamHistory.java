@@ -37,8 +37,8 @@ public class AgileSimpleStreamHistory {
             System.exit (1);
         };
         String outputPathPrefix = " /tmp/out.txt" ;
-        String historyTupleFilePath = "/home/adminpsl/flinkDemo/historyTuple.txt";
-        String historyLiveJsonFilePath = "/home/adminpsl/flinkDemo/historyLive.json";
+        String historyTupleFilePath = "/tmp/historyTuple.txt";
+        String historyLiveJsonFilePath = "/tmp/historyLive.json";
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         process(outputPathPrefix, historyTupleFilePath, historyLiveJsonFilePath, env);
     }
